@@ -50,7 +50,7 @@ class _HandDrawAnswerViewState extends State<HandDrawAnswerView> {
 
     final savedResult = _handDrawAnswerFormat.savedResult;
     if (savedResult != null && savedResult.result != null) {
-      File file = File(savedResult.result!.signatureImageUrl);
+      File file = File(savedResult.result!.signatureImageUrl!);
 
       if (file.existsSync()) {
         this._resultFile = file;
@@ -113,7 +113,7 @@ class _HandDrawAnswerViewState extends State<HandDrawAnswerView> {
           valueIdentifier: _nameController.text,
           result: HandDrawQuestionSignatureResult(
             name: _nameController.text,
-            signatureImageUrl: _resultFile!.path,
+            signatureImageUrl: _resultFile?.path ?? '',
           ),
         );
       },

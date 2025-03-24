@@ -33,7 +33,7 @@ class HandDrawQuestionResult
 @JsonSerializable()
 class HandDrawQuestionSignatureResult {
   String name;
-  String signatureImageUrl;
+  String? signatureImageUrl;
 
   HandDrawQuestionSignatureResult(
       {required this.name, required this.signatureImageUrl});

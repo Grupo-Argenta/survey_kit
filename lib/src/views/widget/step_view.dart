@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:survey_kit/src/controller/survey_controller.dart';
 import 'package:survey_kit/src/result/question_result.dart';
+import 'package:survey_kit/src/steps/predefined_steps/question_step.dart';
 import 'package:survey_kit/src/steps/step.dart' as surveystep;
 
 class StepView extends StatelessWidget {
@@ -46,25 +47,20 @@ class StepView extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 32.0),
-                      child: FilledButton(
-                        onPressed: () => surveyController.saveSurvey(
-                            context: context, resultFunction: resultFunction),
-                        style: ButtonStyle(
-                          backgroundColor: WidgetStatePropertyAll(
-                            Color(0xFFDADADA),
+                    if (step is QuestionStep)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 32.0),
+                        child: FilledButton(
+                          onPressed: () => surveyController.saveSurvey(
+                              context: context, resultFunction: resultFunction),
+                          child: Text(
+                            context.read<Map<String, String>?>()?[
+                                    'finish_later'] ??
+                                'Finish Later',
+                            style: TextStyle(color: Colors.white),
                           ),
                         ),
-                        child: Text(
-                          context.read<Map<String, String>?>()?[
-                                  'finish_later'] ??
-                              step.buttonText ??
-                              'Finish Later',
-                          style: TextStyle(color: Colors.white),
-                        ),
                       ),
-                    ),
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 32.0),
                       child: OutlinedButton(

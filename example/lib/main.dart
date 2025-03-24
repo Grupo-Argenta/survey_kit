@@ -66,14 +66,14 @@ class _MyAppState extends State<MyApp> {
                       cupertinoOverrideTheme: CupertinoThemeData(
                         primaryColor: Colors.cyan,
                       ),
-                      outlinedButtonTheme: OutlinedButtonThemeData(
+                      filledButtonTheme: FilledButtonThemeData(
                         style: ButtonStyle(
-                          minimumSize: MaterialStateProperty.all(
+                          minimumSize: WidgetStateProperty.all(
                             Size(150.0, 60.0),
                           ),
-                          side: MaterialStateProperty.resolveWith(
-                            (Set<MaterialState> state) {
-                              if (state.contains(MaterialState.disabled)) {
+                          side: WidgetStateProperty.resolveWith(
+                            (Set<WidgetState> state) {
+                              if (state.contains(WidgetState.disabled)) {
                                 return BorderSide(
                                   color: Colors.grey,
                                 );
@@ -83,14 +83,56 @@ class _MyAppState extends State<MyApp> {
                               );
                             },
                           ),
-                          shape: MaterialStateProperty.all(
+                          shape: WidgetStateProperty.all(
                             RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8.0),
                             ),
                           ),
-                          textStyle: MaterialStateProperty.resolveWith(
-                            (Set<MaterialState> state) {
-                              if (state.contains(MaterialState.disabled)) {
+                          textStyle: WidgetStateProperty.resolveWith(
+                            (Set<WidgetState> state) {
+                              if (state.contains(WidgetState.disabled)) {
+                                return Theme.of(context)
+                                    .textTheme
+                                    .labelLarge
+                                    ?.copyWith(
+                                      color: Colors.grey,
+                                    );
+                              }
+                              return Theme.of(context)
+                                  .textTheme
+                                  .labelLarge
+                                  ?.copyWith(
+                                    color: Colors.cyan,
+                                  );
+                            },
+                          ),
+                        ),
+                      ),
+                      outlinedButtonTheme: OutlinedButtonThemeData(
+                        style: ButtonStyle(
+                          minimumSize: WidgetStateProperty.all(
+                            Size(150.0, 60.0),
+                          ),
+                          side: WidgetStateProperty.resolveWith(
+                            (Set<WidgetState> state) {
+                              if (state.contains(WidgetState.disabled)) {
+                                return BorderSide(
+                                  color: Colors.grey,
+                                );
+                              }
+                              return BorderSide(
+                                color: Colors.cyan,
+                              );
+                            },
+                          ),
+                          shape: WidgetStateProperty.all(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                          ),
+                          textStyle: WidgetStateProperty.resolveWith(
+                            (Set<WidgetState> state) {
+                              if (state.contains(WidgetState.disabled)) {
                                 return Theme.of(context)
                                     .textTheme
                                     .labelLarge
