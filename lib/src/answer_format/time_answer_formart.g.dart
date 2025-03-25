@@ -14,6 +14,11 @@ TimeAnswerFormat _$TimeAnswerFormatFromJson(Map<String, dynamic> json) =>
           ? null
           : TimeQuestionResult.fromJson(
               json['savedResult'] as Map<String, dynamic>),
+      isChildQuestion: json['isChildQuestion'] as bool? ?? false,
+      childQuestionId: json['childQuestionId'] == null
+          ? null
+          : StepIdentifier.fromJson(
+              json['childQuestionId'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$TimeAnswerFormatToJson(TimeAnswerFormat instance) =>
@@ -21,6 +26,8 @@ Map<String, dynamic> _$TimeAnswerFormatToJson(TimeAnswerFormat instance) =>
       'defaultValue':
           const _TimeOfDayJsonConverter().toJson(instance.defaultValue),
       'savedResult': instance.savedResult,
+      'isChildQuestion': instance.isChildQuestion,
+      'childQuestionId': instance.childQuestionId,
     };
 
 Value? _$JsonConverterFromJson<Json, Value>(

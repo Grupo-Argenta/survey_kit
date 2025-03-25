@@ -14,6 +14,11 @@ StarAnswerFormat _$StarAnswerFormatFromJson(Map<String, dynamic> json) =>
           ? null
           : StarQuestionResult.fromJson(
               json['savedResult'] as Map<String, dynamic>),
+      isChildQuestion: json['isChildQuestion'] as bool? ?? false,
+      childQuestionId: json['childQuestionId'] == null
+          ? null
+          : StepIdentifier.fromJson(
+              json['childQuestionId'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$StarAnswerFormatToJson(StarAnswerFormat instance) =>
@@ -21,4 +26,6 @@ Map<String, dynamic> _$StarAnswerFormatToJson(StarAnswerFormat instance) =>
       'defaultValue': instance.defaultValue,
       'hint': instance.hint,
       'savedResult': instance.savedResult,
+      'isChildQuestion': instance.isChildQuestion,
+      'childQuestionId': instance.childQuestionId,
     };

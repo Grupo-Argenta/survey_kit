@@ -13,12 +13,12 @@ class ImageQuestionResult extends QuestionResult<String?> {
     required String valueIdentifier,
     required String? result,
   }) : super(
-          id: id,
-          startDate: startDate,
-          endDate: endDate,
-          valueIdentifier: valueIdentifier,
-          result: result,
-        );
+         id: id,
+         startDate: startDate,
+         endDate: endDate,
+         valueIdentifier: valueIdentifier,
+         result: result,
+       );
 
   factory ImageQuestionResult.fromJson(Map<String, dynamic> json) =>
       _$ImageQuestionResultFromJson(json);

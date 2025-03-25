@@ -89,19 +89,22 @@ class _SurveyKitState extends State<SurveyKit> {
         providers: [
           Provider<TaskNavigator>.value(value: _taskNavigator),
           Provider<SurveyController>.value(
-              value: widget.surveyController ?? SurveyController()),
+            value: widget.surveyController ?? SurveyController(),
+          ),
           Provider<bool>.value(value: widget.showProgress ?? true),
           Provider<SurveyProgressConfiguration>.value(
-            value: widget.surveyProgressbarConfiguration ??
+            value:
+                widget.surveyProgressbarConfiguration ??
                 SurveyProgressConfiguration(),
           ),
-          Provider<Map<String, String>?>.value(value: widget.localizations)
+          Provider<Map<String, String>?>.value(value: widget.localizations),
         ],
         child: BlocProvider(
-          create: (BuildContext context) => SurveyPresenter(
-            taskNavigator: _taskNavigator,
-            onResult: widget.onResult,
-          ),
+          create:
+              (BuildContext context) => SurveyPresenter(
+                taskNavigator: _taskNavigator,
+                onResult: widget.onResult,
+              ),
           child: SurveyPage(
             length: widget.task.steps.length,
             onResult: widget.onResult,
@@ -118,11 +121,7 @@ class SurveyPage extends StatefulWidget {
   final Widget Function(AppBarConfiguration appBarConfiguration)? appBar;
   final Function(SurveyResult) onResult;
 
-  const SurveyPage({
-    required this.length,
-    required this.onResult,
-    this.appBar,
-  });
+  const SurveyPage({required this.length, required this.onResult, this.appBar});
 
   @override
   _SurveyPageState createState() => _SurveyPageState();
@@ -160,44 +159,43 @@ class _SurveyPageState extends State<SurveyPage>
         if (state is PresentingSurveyState) {
           return Scaffold(
             backgroundColor: Colors.transparent,
-            appBar: state.currentStep.showAppBar
-                ? PreferredSize(
-                    preferredSize: Size(
-                      double.infinity,
-                      70.0,
-                    ),
-                    child: widget.appBar != null
-                        ? widget.appBar!.call(state.appBarConfiguration)
-                        : SurveyAppBar(
-                            appBarConfiguration: state.appBarConfiguration,
-                          ),
-                  )
-                : null,
+            appBar:
+                state.currentStep.showAppBar
+                    ? PreferredSize(
+                      preferredSize: const Size(double.infinity, 70.0),
+                      child:
+                          widget.appBar != null
+                              ? widget.appBar!.call(state.appBarConfiguration)
+                              : SurveyAppBar(
+                                appBarConfiguration: state.appBarConfiguration,
+                              ),
+                    )
+                    : null,
             body: TabBarView(
-              physics: NeverScrollableScrollPhysics(),
+              physics: const NeverScrollableScrollPhysics(),
               controller: tabController,
-              children: state.steps
-                  .map(
-                    (e) => _SurveyView(
-                      id: e.stepIdentifier.id,
-                      createView: () => e.createView(
-                        questionResult: state.questionResults.firstWhereOrNull(
-                          (element) => element.id == e.stepIdentifier,
+              children:
+                  state.steps
+                      .map(
+                        (e) => _SurveyView(
+                          id: e.stepIdentifier.id,
+                          createView:
+                              () => e.createView(
+                                questionResult: state.questionResults
+                                    .firstWhereOrNull(
+                                      (element) =>
+                                          element.id == e.stepIdentifier,
+                                    ),
+                              ),
                         ),
-                      ),
-                    ),
-                  )
-                  .toList(),
+                      )
+                      .toList(),
             ),
           );
         } else if (state is SurveyResultState && state.currentStep != null) {
-          return Center(
-            child: CircularProgressIndicator(),
-          );
+          return const Center(child: CircularProgressIndicator());
         }
-        return Center(
-          child: CircularProgressIndicator(),
-        );
+        return const Center(child: CircularProgressIndicator());
       },
     );
   }
@@ -211,11 +209,6 @@ class _SurveyView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      key: ValueKey<String>(
-        id,
-      ),
-      child: createView(),
-    );
+    return Container(key: ValueKey<String>(id), child: createView());
   }
 }

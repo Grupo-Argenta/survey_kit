@@ -6,6 +6,7 @@ import 'package:survey_kit/src/answer_format/double_answer_format.dart';
 import 'package:survey_kit/src/answer_format/multiple_choice_auto_complete_answer_format.dart';
 import 'package:survey_kit/src/answer_format/multiple_double_answer_format.dart';
 import 'package:survey_kit/src/answer_format/image_answer_format.dart';
+import 'package:survey_kit/src/answer_format/multiple_image_answer_format.dart';
 import 'package:survey_kit/src/answer_format/integer_answer_format.dart';
 import 'package:survey_kit/src/answer_format/multiple_choice_answer_format.dart';
 import 'package:survey_kit/src/answer_format/scale_answer_format.dart';
@@ -18,8 +19,11 @@ import 'package:survey_kit/src/steps/identifier/step_identifier.dart';
 import 'package:survey_kit/src/steps/predefined_steps/answer_format_not_defined_exception.dart';
 
 abstract class AnswerFormat {
-  const AnswerFormat(
-      {this.savedResult, this.isChildQuestion = false, this.childQuestionId});
+  const AnswerFormat({
+    this.savedResult,
+    this.isChildQuestion = false,
+    this.childQuestionId,
+  });
 
   final QuestionResult? savedResult;
   final bool isChildQuestion;
@@ -51,6 +55,8 @@ abstract class AnswerFormat {
         return TimeAnswerFormat.fromJson(json);
       case 'file':
         return ImageAnswerFormat.fromJson(json);
+      case 'multiple_file':
+      //return MultipleImageAnswerFormat.fromJson(json);
       case 'star':
         return StarAnswerFormat.fromJson(json);
       default:

@@ -18,6 +18,11 @@ ImageAnswerFormat _$ImageAnswerFormatFromJson(Map<String, dynamic> json) =>
           ? null
           : ImageQuestionResult.fromJson(
               json['savedResult'] as Map<String, dynamic>),
+      isChildQuestion: json['isChildQuestion'] as bool? ?? false,
+      childQuestionId: json['childQuestionId'] == null
+          ? null
+          : StepIdentifier.fromJson(
+              json['childQuestionId'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$ImageAnswerFormatToJson(ImageAnswerFormat instance) =>
@@ -29,4 +34,6 @@ Map<String, dynamic> _$ImageAnswerFormatToJson(ImageAnswerFormat instance) =>
       'useGallery': instance.useGallery,
       'hintImage': instance.hintImage,
       'hintTitle': instance.hintTitle,
+      'isChildQuestion': instance.isChildQuestion,
+      'childQuestionId': instance.childQuestionId,
     };
