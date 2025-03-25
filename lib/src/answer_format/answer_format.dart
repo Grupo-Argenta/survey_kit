@@ -56,7 +56,7 @@ abstract class AnswerFormat {
       case 'file':
         return ImageAnswerFormat.fromJson(json);
       case 'multiple_file':
-      //return MultipleImageAnswerFormat.fromJson(json);
+        return MultipleImageAnswerFormat.fromJson(json);
       case 'star':
         return StarAnswerFormat.fromJson(json);
       default:

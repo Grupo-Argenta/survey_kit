@@ -32,7 +32,6 @@ class _ImageAnswerViewState extends State<ImageAnswerView> {
   bool _isValid = false;
   bool _changed = false;
   String filePath = '';
-  //List<String> filePaths = [];
 
   @override
   void initState() {
