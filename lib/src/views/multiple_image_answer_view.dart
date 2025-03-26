@@ -33,7 +33,18 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
   Widget build(BuildContext context) {
     return StepView(
       step: widget.questionStep,
-      resultFunction: () {},
+      resultFunction: () {
+        if (!_changed && _multipleImageAnswerFormat.savedResult != null) {
+          return _multipleImageAnswerFormat.savedResult!;
+        }
+        return MultipleImageQuestionResult(
+          id: widget.questionStep.stepIdentifier,
+          startDate: _startDate,
+          endDate: DateTime.now(),
+          valueIdentifier: filePaths.toString(),
+          result: filePaths,
+        );
+      },
       title:
           widget.questionStep.title.isNotEmpty
               ? Text(
@@ -55,6 +66,8 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
   void initState() {
     super.initState();
     _retrieveLostData();
+    _multipleImageAnswerFormat =
+        widget.questionStep.answerFormat as MultipleImageAnswerFormat;
   }
 
   _retrieveLostData() async {

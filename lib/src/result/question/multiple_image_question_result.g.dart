@@ -13,7 +13,8 @@ MultipleImageQuestionResult _$MultipleImageQuestionResultFromJson(
       startDate: DateTime.parse(json['startDate'] as String),
       endDate: DateTime.parse(json['endDate'] as String),
       valueIdentifier: json['valueIdentifier'] as String,
-      result: json['result'] as String?,
+      result:
+          (json['result'] as List<dynamic>?)?.map((e) => e as String).toList(),
     );
 
 Map<String, dynamic> _$MultipleImageQuestionResultToJson(
