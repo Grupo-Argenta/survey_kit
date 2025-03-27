@@ -64,6 +64,7 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
 
   @override
   void initState() {
+    print('iniciou multiple image');
     super.initState();
     _retrieveLostData();
     _multipleImageAnswerFormat =

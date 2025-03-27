@@ -1,6 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:survey_kit/src/answer_format/answer_format.dart';
 import 'package:survey_kit/src/result/question/image_question_result.dart';
+import 'package:survey_kit/src/result/question/multiple_image_question_result.dart';
 import 'package:survey_kit/src/steps/identifier/step_identifier.dart';
 
 part 'multiple_image_answer_format.g.dart';
@@ -8,7 +9,7 @@ part 'multiple_image_answer_format.g.dart';
 @JsonSerializable()
 class MultipleImageAnswerFormat implements AnswerFormat {
   final List<String>? defaultValue;
-  final ImageQuestionResult? savedResult;
+  final MultipleImageQuestionResult? savedResult;
   final String buttonText;
   final bool useCamera;
   final bool useGallery;

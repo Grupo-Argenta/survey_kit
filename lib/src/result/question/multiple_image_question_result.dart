@@ -20,6 +20,11 @@ class MultipleImageQuestionResult extends QuestionResult<List<String>?> {
          result: result,
        );
 
+  factory MultipleImageQuestionResult.fromJson(Map<String, dynamic> json) =>
+      _$MultipleImageQuestionResultFromJson(json);
+
+  Map<String, dynamic> toJson() => _$MultipleImageQuestionResultToJson(this);
+
   @override
   List<Object?> get props => [id, startDate, endDate, valueIdentifier, result];
 }
