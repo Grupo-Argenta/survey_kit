@@ -381,23 +381,17 @@ class _ImageAnswerViewState extends State<ImageAnswerView> {
     try {
       await crashlytics.log('Opening gallery image picker');
 
-      //final picture = await _picker.pickImage(source: ImageSource.gallery);
-      final picture = await _picker.pickMultiImage(limit: 10);
+      final picture = await _picker.pickImage(source: ImageSource.gallery);
 
-      picture.forEach((element) {
-        element.readAsBytes().then((value) {
-          print('eduardo');
-          print(picture);
+      await picture?.readAsBytes().then((value) {
+        setState(() {
+          filePath = picture.path;
+
+          if (filePath.isNotEmpty) {
+            _isValid = true;
+            _changed = true;
+          }
         });
-        //     await picture?.readAsBytes().then((value) {
-        //       setState(() {
-        //         filePath = picture.path;
-        //
-        //         if (filePath.isNotEmpty) {
-        //           _isValid = true;
-        //           _changed = true;
-        //         }
-        //       });
 
         Navigator.of(context).pop();
       });
