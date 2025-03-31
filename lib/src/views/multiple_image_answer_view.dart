@@ -84,16 +84,29 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
                 ),
               ),
               if (filePaths.isNotEmpty)
-                for (final filePath in filePaths)
-                  Flexible(
-                    child: Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: Text(
-                        filePath.split('/')[filePath.split('/').length - 1],
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                    ),
-                  ),
+                Wrap(
+                  spacing: 8,
+                  children:
+                      filePaths.map((filePath) {
+                        return GestureDetector(
+                          onTap: () => _previewImage(filePath),
+                          child: Stack(
+                            alignment: Alignment.topRight,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8),
+                                child: Image.file(
+                                  File(filePath),
+                                  width: 100,
+                                  height: 100,
+                                  fit: BoxFit.scaleDown,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                ),
             ],
           ),
         ),
@@ -228,10 +241,10 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
         setState(() {
           filePaths.add(picture.path);
 
-          //         if (filePaths.isNotEmpty) {
-          //           _isValid = true;
-          //           _changed = true;
-          //         }
+          if (filePaths.isNotEmpty) {
+            _isValid = true;
+            _changed = true;
+          }
         });
 
         Navigator.of(context).pop();
@@ -357,22 +370,6 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
     );
   }
 
-  void _previewImage(String filePath) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder:
-            (context) => Scaffold(
-              backgroundColor: Colors.black,
-              appBar: AppBar(backgroundColor: Colors.black),
-              body: Center(
-                child: PhotoView(imageProvider: FileImage(File(filePath))),
-              ),
-            ),
-      ),
-    );
-  }
-
   _retrieveLostData() async {
     final response = await _picker.retrieveLostData();
 
@@ -392,5 +389,79 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
     } else {
       debugPrint(response.exception!.code);
     }
+  }
+
+  void _previewImage(String filePath) {
+    int index = filePaths.indexOf(filePath);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => Scaffold(
+              backgroundColor: Colors.black,
+              appBar: AppBar(backgroundColor: Colors.black),
+              body: PageView.builder(
+                controller: PageController(initialPage: index),
+                itemCount: filePaths.length,
+                itemBuilder: (context, index) {
+                  return Stack(
+                    children: [
+                      Center(
+                        child: PhotoView(
+                          imageProvider: FileImage(File(filePaths[index])),
+                        ),
+                      ),
+                      Positioned(
+                        top: 20,
+                        right: 20,
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.delete,
+                            color: Colors.red,
+                            size: 32,
+                          ),
+                          onPressed:
+                              () => _confirmDeleteImage(
+                                context,
+                                filePaths[index],
+                              ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+      ),
+    );
+  }
+
+  void _confirmDeleteImage(BuildContext context, String filePath) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('Confirmar exclusão'),
+          content: const Text('Tem certeza que deseja excluir esta imagem?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  filePaths.remove(filePath);
+                  _isValid = filePaths.isNotEmpty;
+                });
+                Navigator.of(dialogContext).pop();
+                Navigator.of(context).pop();
+              },
+              child: const Text('Deletar', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
   }
 }
