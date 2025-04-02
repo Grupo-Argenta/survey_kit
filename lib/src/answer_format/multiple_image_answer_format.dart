@@ -19,6 +19,9 @@ class MultipleImageAnswerFormat implements AnswerFormat {
   final bool isChildQuestion;
   final StepIdentifier? childQuestionId;
 
+  @override
+  toString() => 'MultipleImageAnswerFormat(${toJson()})';
+
   const MultipleImageAnswerFormat({
     this.defaultValue,
     this.buttonText = 'Image: ',

@@ -116,11 +116,20 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
 
   @override
   void initState() {
-    print('iniciou multiple image');
     super.initState();
     _retrieveLostData();
     _multipleImageAnswerFormat =
         widget.questionStep.answerFormat as MultipleImageAnswerFormat;
+
+    final savedResult = _multipleImageAnswerFormat.savedResult;
+    if (savedResult != null && savedResult.result != null) {
+      filePaths = savedResult.result!;
+      setState(() {
+        _isValid = true;
+      });
+    }
+
+    _startDate = DateTime.now();
   }
 
   Future<void> _openCamera(BuildContext context) async {

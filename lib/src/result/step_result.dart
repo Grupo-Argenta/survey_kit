@@ -12,12 +12,12 @@ class StepResult extends Result {
   @_Converter()
   final List<QuestionResult> results;
 
-  StepResult(
-      {required Identifier? id,
-      required DateTime startDate,
-      required DateTime endDate,
-      required this.results})
-      : super(id: id, startDate: startDate, endDate: endDate);
+  StepResult({
+    required Identifier? id,
+    required DateTime startDate,
+    required DateTime endDate,
+    required this.results,
+  }) : super(id: id, startDate: startDate, endDate: endDate);
 
   factory StepResult.fromQuestion({required QuestionResult questionResult}) {
     return StepResult(
@@ -30,6 +30,9 @@ class StepResult extends Result {
 
   factory StepResult.fromJson(Map<String, dynamic> json) =>
       _$StepResultFromJson(json);
+
+  @override
+  String toString() => 'StepResult: $id, $startDate, $results';
 
   Map<String, dynamic> toJson() => _$StepResultToJson(this);
 
