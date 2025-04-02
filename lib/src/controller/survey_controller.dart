@@ -18,7 +18,8 @@ class SurveyController {
   final bool Function(
     BuildContext context,
     QuestionResult Function() resultFunction,
-  )? onNextStep;
+  )?
+  onNextStep;
 
   /// Defines what should happen if the previus step is called
   ///
@@ -33,7 +34,8 @@ class SurveyController {
   final bool Function(
     BuildContext context,
     QuestionResult Function()? resultFunction,
-  )? onStepBack;
+  )?
+  onStepBack;
 
   /// Defines what should happen if the survey should be closed
   ///
@@ -48,7 +50,8 @@ class SurveyController {
   final bool Function(
     BuildContext context,
     QuestionResult Function()? resultFunction,
-  )? onCloseSurvey;
+  )?
+  onCloseSurvey;
 
   /// Defines what should happen if the survey should be saved (for after)
   ///
@@ -63,7 +66,8 @@ class SurveyController {
   final bool Function(
     BuildContext context,
     QuestionResult Function()? resultFunction,
-  )? onSaveSurvey;
+  )?
+  onSaveSurvey;
 
   SurveyController({
     this.onNextStep,
@@ -79,11 +83,9 @@ class SurveyController {
     if (onNextStep != null) {
       if (!onNextStep!(context, resultFunction)) return;
     }
-    BlocProvider.of<SurveyPresenter>(context).add(
-      NextStep(
-        resultFunction.call(),
-      ),
-    );
+    BlocProvider.of<SurveyPresenter>(
+      context,
+    ).add(NextStep(resultFunction.call()));
   }
 
   void stepBack({
@@ -93,11 +95,9 @@ class SurveyController {
     if (onStepBack != null) {
       if (!onStepBack!(context, resultFunction)) return;
     }
-    BlocProvider.of<SurveyPresenter>(context).add(
-      StepBack(
-        resultFunction != null ? resultFunction.call() : null,
-      ),
-    );
+    BlocProvider.of<SurveyPresenter>(
+      context,
+    ).add(StepBack(resultFunction != null ? resultFunction.call() : null));
   }
 
   void closeSurvey({
@@ -107,11 +107,9 @@ class SurveyController {
     if (onCloseSurvey != null) {
       if (!onCloseSurvey!(context, resultFunction)) return;
     }
-    BlocProvider.of<SurveyPresenter>(context).add(
-      CloseSurvey(
-        resultFunction != null ? resultFunction.call() : null,
-      ),
-    );
+    BlocProvider.of<SurveyPresenter>(
+      context,
+    ).add(CloseSurvey(resultFunction != null ? resultFunction.call() : null));
   }
 
   void saveSurvey({
@@ -121,10 +119,8 @@ class SurveyController {
     if (onSaveSurvey != null) {
       if (!onSaveSurvey!(context, resultFunction)) return;
     }
-    BlocProvider.of<SurveyPresenter>(context).add(
-      SaveSurvey(
-        resultFunction != null ? resultFunction.call() : null,
-      ),
-    );
+    BlocProvider.of<SurveyPresenter>(
+      context,
+    ).add(SaveSurvey(resultFunction != null ? resultFunction.call() : null));
   }
 }
