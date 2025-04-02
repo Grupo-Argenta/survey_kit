@@ -112,6 +112,10 @@ class _Converter implements JsonConverter<List<QuestionResult>, Object> {
         final qrJson = qr.toJson();
         qrJson['type'] = 'ImageQuestionResult';
         allQuestionResultsEncoded.add(qrJson);
+			} else if (qr is MultipleImageQuestionResult){
+				final qrJson = qr.toJson();
+				qrJson['type'] = 'MultipleImageQuestionResult';
+				allQuestionResultsEncoded.add(qrJson);
       } else if (qr is HandDrawQuestionResult) {
         final qrJson = qr.toJson();
         qrJson['type'] = 'HandDrawQuestionResult';
@@ -161,6 +165,8 @@ class _Converter implements JsonConverter<List<QuestionResult>, Object> {
         results.add(VideoStepResult.fromJson(qData));
       } else if (qType == 'ImageQuestionResult') {
         results.add(ImageQuestionResult.fromJson(qData));
+      } else if (qType == 'MultipleImageQuestionResult') {
+        results.add(MultipleImageQuestionResult.fromJson(qData));
       } else if (qType == 'HandDrawQuestionResult') {
         results.add(HandDrawQuestionResult.fromJson(qData));
       } else {
