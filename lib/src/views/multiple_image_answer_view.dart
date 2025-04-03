@@ -49,19 +49,17 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
         );
       },
       isValid: _isValid || widget.questionStep.isOptional,
-      title:
-          widget.questionStep.title.isNotEmpty
-              ? Text(
-                widget.questionStep.title,
-                style:
-                    widget.questionStep.title.length > 270
-                        ? Theme.of(
-                          context,
-                        ).textTheme.displayMedium!.copyWith(fontSize: 21)
-                        : Theme.of(context).textTheme.displayMedium,
-                textAlign: TextAlign.center,
-              )
-              : widget.questionStep.content,
+      title: widget.questionStep.title.isNotEmpty
+          ? Text(
+              widget.questionStep.title,
+              style: widget.questionStep.title.length > 270
+                  ? Theme.of(
+                      context,
+                    ).textTheme.displayMedium!.copyWith(fontSize: 21)
+                  : Theme.of(context).textTheme.displayMedium,
+              textAlign: TextAlign.center,
+            )
+          : widget.questionStep.content,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 32),
         child: SizedBox(
@@ -77,7 +75,19 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     ElevatedButton(
-                      onPressed: _optionsDialogBox,
+                      onPressed: () {
+                        if (filePaths.length < 10) {
+                          _optionsDialogBox();
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Não é possível inserir mais de 10 imagens!',
+                              ),
+                            ),
+                          );
+                        }
+                      },
                       child: Text(_multipleImageAnswerFormat.buttonText),
                     ),
                   ],
@@ -86,26 +96,49 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
               if (filePaths.isNotEmpty)
                 Wrap(
                   spacing: 8,
-                  children:
-                      filePaths.map((filePath) {
-                        return GestureDetector(
-                          onTap: () => _previewImage(filePath),
-                          child: Stack(
-                            alignment: Alignment.topRight,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(8),
-                                child: Image.file(
-                                  File(filePath),
-                                  width: 100,
-                                  height: 100,
-                                  fit: BoxFit.scaleDown,
+                  children: filePaths.map((filePath) {
+                    return GestureDetector(
+                      onTap: () => _previewImage(filePath),
+                      child: Stack(
+                        alignment: Alignment.topRight,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(8),
+                            child: Image.file(
+                              File(filePath),
+                              width: 100,
+                              height: 100,
+                              fit: BoxFit.scaleDown,
+                            ),
+                          ),
+                          Positioned(
+                            top: -10,
+                            right: 5,
+                            child: IconButton(
+                              onPressed: () {
+                                _confirmDeleteImage(
+                                  context,
+                                  filePath,
+                                  popAll: false,
+                                );
+                              },
+                              icon: const DecoratedBox(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(10)),
+                                ),
+                                child: Icon(
+                                  Icons.delete,
+                                  color: Colors.red,
                                 ),
                               ),
-                            ],
+                            ),
                           ),
-                        );
-                      }).toList(),
+                        ],
+                      ),
+                    );
+                  }).toList(),
                 ),
             ],
           ),
@@ -146,83 +179,81 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
       await showDialog<void>(
         context: context,
         useRootNavigator: false,
-        builder:
-            (BuildContext contextDialog) => CameraAwesomeBuilder.custom(
-              enablePhysicalButton: true,
-              builder: (state, preview) {
-                state.captureState$.listen((event) {
-                  if (event?.status == MediaCaptureStatus.capturing) {
-                    control = false;
-                  }
-                  if (event?.status == MediaCaptureStatus.success &&
-                      control == false) {
-                    event?.captureRequest.when(
-                      single: (single) async {
-                        if (single.file?.path != null) {
-                          final file = File(single.file!.path);
-                          final result = await showDialog<bool>(
-                            context: contextDialog,
-                            useRootNavigator: false,
-                            builder:
-                                (BuildContext newContext) =>
-                                    _picturePreview(file, newContext),
-                          );
+        builder: (BuildContext contextDialog) => CameraAwesomeBuilder.custom(
+          enablePhysicalButton: true,
+          builder: (state, preview) {
+            state.captureState$.listen((event) {
+              if (event?.status == MediaCaptureStatus.capturing) {
+                control = false;
+              }
+              if (event?.status == MediaCaptureStatus.success &&
+                  control == false) {
+                event?.captureRequest.when(
+                  single: (single) async {
+                    if (single.file?.path != null) {
+                      final file = File(single.file!.path);
+                      final result = await showDialog<bool>(
+                        context: contextDialog,
+                        useRootNavigator: false,
+                        builder: (BuildContext newContext) =>
+                            _picturePreview(file, newContext),
+                      );
 
-                          if (result == true) {
-                            setState(() {
-                              filePaths.add(single.file!.path);
-                              _isValid = true;
-                              _changed = true;
-                            });
+                      if (result == true) {
+                        setState(() {
+                          filePaths.add(single.file!.path);
+                          _isValid = true;
+                          _changed = true;
+                        });
 
-                            Navigator.of(context).pop();
-                            Navigator.of(context).pop();
+                        Navigator.of(context).pop();
+                        Navigator.of(context).pop();
 
-                            if (!file.existsSync()) {
-                              throw Exception('Erro ao bater foto');
-                            }
-                          } else {
-                            control = true;
-                          }
+                        if (!file.existsSync()) {
+                          throw Exception('Erro ao bater foto');
                         }
-                      },
-                    );
-                  }
-                });
-
-                return AwesomeCameraLayout(
-                  state: state,
-                  topActions: const SizedBox.shrink(),
-                  middleContent: const SizedBox.shrink(),
-                  bottomActions: AwesomeBottomActions(
-                    state: state,
-                    left: AwesomeFlashButton(state: state),
-                    right: const SizedBox.shrink(),
-                  ),
+                      } else {
+                        control = true;
+                      }
+                    }
+                  },
                 );
-              },
-              saveConfig: SaveConfig.photo(
-                pathBuilder: (sensors) async {
-                  final extDir = await getTemporaryDirectory();
-                  final testDir = await Directory(
-                    '${extDir.path}/camerawesome',
-                  ).create(recursive: true);
-                  final filePath =
-                      '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+              }
+            });
 
-                  await crashlytics.log(
-                    'Camera image picker successfully opened',
-                  );
+            return AwesomeCameraLayout(
+              state: state,
+              topActions: const SizedBox.shrink(),
+              middleContent: const SizedBox.shrink(),
+              bottomActions: AwesomeBottomActions(
+                state: state,
+                left: AwesomeFlashButton(state: state),
+                right: const SizedBox.shrink(),
+              ),
+            );
+          },
+          saveConfig: SaveConfig.photo(
+            pathBuilder: (sensors) async {
+              final extDir = await getTemporaryDirectory();
+              final testDir = await Directory(
+                '${extDir.path}/camerawesome',
+              ).create(recursive: true);
+              final filePath =
+                  '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
 
-                  return SingleCaptureRequest(filePath, sensors.first);
-                },
-              ),
-              previewFit: CameraPreviewFit.contain,
-              sensorConfig: SensorConfig.single(
-                sensor: Sensor.position(SensorPosition.back),
-                aspectRatio: CameraAspectRatios.ratio_16_9,
-              ),
-            ),
+              await crashlytics.log(
+                'Camera image picker successfully opened',
+              );
+
+              return SingleCaptureRequest(filePath, sensors.first);
+            },
+          ),
+          previewFit: CameraPreviewFit.contain,
+          sensorConfig: SensorConfig.single(
+            sensor: Sensor.position(SensorPosition.back),
+            aspectRatio: CameraAspectRatios.ratio_16_9,
+          ),
+        ),
       );
     } catch (err, stacktrace) {
       final status = await Permission.camera.status;
@@ -289,26 +320,23 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
                           _multipleImageAnswerFormat.hintTitle != null) {
                         showDialog<void>(
                           context: context,
-                          builder:
-                              (context) => AlertDialog(
-                                title: Text(
-                                  _multipleImageAnswerFormat.hintTitle
-                                      .toString(),
-                                  style: const TextStyle(color: Colors.black),
-                                ),
-                                content: Image.network(
-                                  _multipleImageAnswerFormat.hintImage
-                                      .toString(),
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () async {
-                                      await _openCamera(context);
-                                    },
-                                    child: const Text('Abrir câmera'),
-                                  ),
-                                ],
+                          builder: (context) => AlertDialog(
+                            title: Text(
+                              _multipleImageAnswerFormat.hintTitle.toString(),
+                              style: const TextStyle(color: Colors.black),
+                            ),
+                            content: Image.network(
+                              _multipleImageAnswerFormat.hintImage.toString(),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () async {
+                                  await _openCamera(context);
+                                },
+                                child: const Text('Abrir câmera'),
                               ),
+                            ],
+                          ),
                         );
                       } else {
                         _openCamera(context);
@@ -389,7 +417,6 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
     if (response.file != null) {
       setState(() {
         if (response.file != null && response.file?.path != null) {
-          print('retrieived');
           filePaths.add(response.file!.path);
         }
 
@@ -401,52 +428,54 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
   }
 
   void _previewImage(String filePath) {
-    int index = filePaths.indexOf(filePath);
+    final int index = filePaths.indexOf(filePath);
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder:
-            (context) => Scaffold(
-              backgroundColor: Colors.black,
-              appBar: AppBar(backgroundColor: Colors.black),
-              body: PageView.builder(
-                controller: PageController(initialPage: index),
-                itemCount: filePaths.length,
-                itemBuilder: (context, index) {
-                  return Stack(
-                    children: [
-                      Center(
-                        child: PhotoView(
-                          imageProvider: FileImage(File(filePaths[index])),
-                        ),
+      MaterialPageRoute<void>(
+        builder: (context) => Scaffold(
+          backgroundColor: Colors.black,
+          appBar: AppBar(backgroundColor: Colors.black),
+          body: PageView.builder(
+            controller: PageController(initialPage: index),
+            itemCount: filePaths.length,
+            itemBuilder: (context, index) {
+              return Stack(
+                children: [
+                  Center(
+                    child: PhotoView(
+                      imageProvider: FileImage(File(filePaths[index])),
+                    ),
+                  ),
+                  Positioned(
+                    top: 20,
+                    right: 20,
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.delete,
+                        color: Colors.red,
+                        size: 32,
                       ),
-                      Positioned(
-                        top: 20,
-                        right: 20,
-                        child: IconButton(
-                          icon: const Icon(
-                            Icons.delete,
-                            color: Colors.red,
-                            size: 32,
-                          ),
-                          onPressed:
-                              () => _confirmDeleteImage(
-                                context,
-                                filePaths[index],
-                              ),
-                        ),
+                      onPressed: () => _confirmDeleteImage(
+                        context,
+                        filePaths[index],
                       ),
-                    ],
-                  );
-                },
-              ),
-            ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
       ),
     );
   }
 
-  void _confirmDeleteImage(BuildContext context, String filePath) {
-    showDialog(
+  void _confirmDeleteImage(
+    BuildContext context,
+    String filePath, {
+    bool popAll = true,
+  }) {
+    showDialog<void>(
       context: context,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
@@ -464,7 +493,9 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
                   _isValid = filePaths.isNotEmpty;
                 });
                 Navigator.of(dialogContext).pop();
-                Navigator.of(context).pop();
+                if (popAll) {
+                  Navigator.of(context).pop();
+                }
               },
               child: const Text('Deletar', style: TextStyle(color: Colors.red)),
             ),
