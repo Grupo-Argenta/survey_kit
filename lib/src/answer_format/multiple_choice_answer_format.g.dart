@@ -22,6 +22,11 @@ MultipleChoiceAnswerFormat _$MultipleChoiceAnswerFormatFromJson(
           ? null
           : MultipleChoiceQuestionResult.fromJson(
               json['savedResult'] as Map<String, dynamic>),
+      isChildQuestion: json['isChildQuestion'] as bool? ?? false,
+      childQuestionId: json['childQuestionId'] == null
+          ? null
+          : StepIdentifier.fromJson(
+              json['childQuestionId'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$MultipleChoiceAnswerFormatToJson(
@@ -32,4 +37,6 @@ Map<String, dynamic> _$MultipleChoiceAnswerFormatToJson(
       'savedResult': instance.savedResult,
       'otherField': instance.otherField,
       'maxAnswers': instance.maxAnswers,
+      'isChildQuestion': instance.isChildQuestion,
+      'childQuestionId': instance.childQuestionId,
     };

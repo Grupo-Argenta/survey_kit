@@ -18,6 +18,11 @@ ScaleAnswerFormat _$ScaleAnswerFormatFromJson(Map<String, dynamic> json) =>
           ? null
           : ScaleQuestionResult.fromJson(
               json['savedResult'] as Map<String, dynamic>),
+      isChildQuestion: json['isChildQuestion'] as bool? ?? false,
+      childQuestionId: json['childQuestionId'] == null
+          ? null
+          : StepIdentifier.fromJson(
+              json['childQuestionId'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$ScaleAnswerFormatToJson(ScaleAnswerFormat instance) =>
@@ -29,4 +34,6 @@ Map<String, dynamic> _$ScaleAnswerFormatToJson(ScaleAnswerFormat instance) =>
       'maximumValueDescription': instance.maximumValueDescription,
       'minimumValueDescription': instance.minimumValueDescription,
       'savedResult': instance.savedResult,
+      'isChildQuestion': instance.isChildQuestion,
+      'childQuestionId': instance.childQuestionId,
     };

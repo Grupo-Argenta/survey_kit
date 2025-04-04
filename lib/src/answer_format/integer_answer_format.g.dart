@@ -14,6 +14,11 @@ IntegerAnswerFormat _$IntegerAnswerFormatFromJson(Map<String, dynamic> json) =>
           ? null
           : IntegerQuestionResult.fromJson(
               json['savedResult'] as Map<String, dynamic>),
+      isChildQuestion: json['isChildQuestion'] as bool? ?? false,
+      childQuestionId: json['childQuestionId'] == null
+          ? null
+          : StepIdentifier.fromJson(
+              json['childQuestionId'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$IntegerAnswerFormatToJson(
@@ -22,4 +27,6 @@ Map<String, dynamic> _$IntegerAnswerFormatToJson(
       'defaultValue': instance.defaultValue,
       'hint': instance.hint,
       'savedResult': instance.savedResult,
+      'isChildQuestion': instance.isChildQuestion,
+      'childQuestionId': instance.childQuestionId,
     };

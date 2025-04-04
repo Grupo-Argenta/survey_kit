@@ -21,6 +21,11 @@ DateAnswerFormat _$DateAnswerFormatFromJson(Map<String, dynamic> json) =>
           ? null
           : DateQuestionResult.fromJson(
               json['savedResult'] as Map<String, dynamic>),
+      isChildQuestion: json['isChildQuestion'] as bool? ?? false,
+      childQuestionId: json['childQuestionId'] == null
+          ? null
+          : StepIdentifier.fromJson(
+              json['childQuestionId'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$DateAnswerFormatToJson(DateAnswerFormat instance) =>
@@ -29,4 +34,6 @@ Map<String, dynamic> _$DateAnswerFormatToJson(DateAnswerFormat instance) =>
       'minDate': instance.minDate?.toIso8601String(),
       'maxDate': instance.maxDate?.toIso8601String(),
       'savedResult': instance.savedResult,
+      'isChildQuestion': instance.isChildQuestion,
+      'childQuestionId': instance.childQuestionId,
     };

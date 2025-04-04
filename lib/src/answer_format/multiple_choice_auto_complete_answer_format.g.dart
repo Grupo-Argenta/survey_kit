@@ -26,6 +26,11 @@ MultipleChoiceAutoCompleteAnswerFormat
               ? null
               : MultipleChoiceQuestionResult.fromJson(
                   json['savedResult'] as Map<String, dynamic>),
+          isChildQuestion: json['isChildQuestion'] as bool? ?? false,
+          childQuestionId: json['childQuestionId'] == null
+              ? null
+              : StepIdentifier.fromJson(
+                  json['childQuestionId'] as Map<String, dynamic>),
         );
 
 Map<String, dynamic> _$MultipleChoiceAutoCompleteAnswerFormatToJson(
@@ -36,4 +41,6 @@ Map<String, dynamic> _$MultipleChoiceAutoCompleteAnswerFormatToJson(
       'savedResult': instance.savedResult,
       'suggestions': instance.suggestions,
       'otherField': instance.otherField,
+      'isChildQuestion': instance.isChildQuestion,
+      'childQuestionId': instance.childQuestionId,
     };

@@ -12,12 +12,12 @@ class StepResult extends Result {
   @_Converter()
   final List<QuestionResult> results;
 
-  StepResult(
-      {required Identifier? id,
-      required DateTime startDate,
-      required DateTime endDate,
-      required this.results})
-      : super(id: id, startDate: startDate, endDate: endDate);
+  StepResult({
+    required Identifier? id,
+    required DateTime startDate,
+    required DateTime endDate,
+    required this.results,
+  }) : super(id: id, startDate: startDate, endDate: endDate);
 
   factory StepResult.fromQuestion({required QuestionResult questionResult}) {
     return StepResult(
@@ -30,6 +30,9 @@ class StepResult extends Result {
 
   factory StepResult.fromJson(Map<String, dynamic> json) =>
       _$StepResultFromJson(json);
+
+  @override
+  String toString() => 'StepResult: $id, $startDate, $results';
 
   Map<String, dynamic> toJson() => _$StepResultToJson(this);
 
@@ -109,6 +112,10 @@ class _Converter implements JsonConverter<List<QuestionResult>, Object> {
         final qrJson = qr.toJson();
         qrJson['type'] = 'ImageQuestionResult';
         allQuestionResultsEncoded.add(qrJson);
+			} else if (qr is MultipleImageQuestionResult){
+				final qrJson = qr.toJson();
+				qrJson['type'] = 'MultipleImageQuestionResult';
+				allQuestionResultsEncoded.add(qrJson);
       } else if (qr is HandDrawQuestionResult) {
         final qrJson = qr.toJson();
         qrJson['type'] = 'HandDrawQuestionResult';
@@ -158,6 +165,8 @@ class _Converter implements JsonConverter<List<QuestionResult>, Object> {
         results.add(VideoStepResult.fromJson(qData));
       } else if (qType == 'ImageQuestionResult') {
         results.add(ImageQuestionResult.fromJson(qData));
+      } else if (qType == 'MultipleImageQuestionResult') {
+        results.add(MultipleImageQuestionResult.fromJson(qData));
       } else if (qType == 'HandDrawQuestionResult') {
         results.add(HandDrawQuestionResult.fromJson(qData));
       } else {
