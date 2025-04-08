@@ -8,17 +8,16 @@ import 'package:path_provider/path_provider.dart';
 import 'package:survey_kit/survey_kit.dart';
 
 class HandDrawAnswerView extends StatefulWidget {
+  const HandDrawAnswerView({
+    super.key,
+    required this.questionStep,
+    required this.result,
+  });
   final QuestionStep questionStep;
   final HandDrawQuestionResult? result;
 
-  const HandDrawAnswerView({
-    Key? key,
-    required this.questionStep,
-    required this.result,
-  }) : super(key: key);
-
   @override
-  _HandDrawAnswerViewState createState() => _HandDrawAnswerViewState();
+  State<HandDrawAnswerView> createState() => _HandDrawAnswerViewState();
 }
 
 class _HandDrawAnswerViewState extends State<HandDrawAnswerView> {
@@ -31,11 +30,7 @@ class _HandDrawAnswerViewState extends State<HandDrawAnswerView> {
   FocusNode inputFocus = FocusNode();
   File? _resultFile;
 
-  final _controller = HandSignatureControl(
-    threshold: 3.0,
-    smoothRatio: 0.65,
-    velocityRange: 2.0,
-  );
+  final _controller = HandSignatureControl();
   final TextEditingController _nameController = TextEditingController(text: '');
 
   @override
@@ -50,10 +45,10 @@ class _HandDrawAnswerViewState extends State<HandDrawAnswerView> {
 
     final savedResult = _handDrawAnswerFormat.savedResult;
     if (savedResult != null && savedResult.result != null) {
-      File file = File(savedResult.result!.signatureImageUrl);
+      final File file = File(savedResult.result!.signatureImageUrl);
 
       if (file.existsSync()) {
-        this._resultFile = file;
+        _resultFile = file;
       } else {
         throw StateError('Provided file does not exists');
       }
@@ -65,7 +60,7 @@ class _HandDrawAnswerViewState extends State<HandDrawAnswerView> {
 
     _startDate = DateTime.now();
 
-    Future.delayed(Duration(seconds: 0), () {
+    Future.delayed(Duration.zero, () {
       inputFocus.requestFocus();
     });
   }
@@ -77,15 +72,15 @@ class _HandDrawAnswerViewState extends State<HandDrawAnswerView> {
     super.dispose();
   }
 
-  Future<void> _checkValidation() async {
-    RegExp nameRegex =
-        new RegExp(r"^[A-Za-zÀ-ÖØ-öø-ÿ]{2,}(?:[-' ][A-Za-zÀ-ÖØ-öø-ÿ]+)*$");
-    bool nameHasMatch = nameRegex.hasMatch(_nameController.text);
+  void _checkValidation() {
+    final RegExp nameRegex =
+        RegExp(r"^[A-Za-zÀ-ÖØ-öø-ÿ]{2,}(?:[-' ][A-Za-zÀ-ÖØ-öø-ÿ]+)*$");
+    final bool nameHasMatch = nameRegex.hasMatch(_nameController.text);
     bool signFileExists = false;
 
     final file = _resultFile;
     if (file != null) {
-      if (await file.exists()) {
+      if (file.existsSync()) {
         signFileExists = true;
       }
     }
@@ -113,7 +108,7 @@ class _HandDrawAnswerViewState extends State<HandDrawAnswerView> {
           valueIdentifier: _nameController.text,
           result: HandDrawQuestionSignatureResult(
             name: _nameController.text,
-            signatureImageUrl: _resultFile!.path,
+            signatureImageUrl: _resultFile?.path ?? '',
           ),
         );
       },
@@ -131,8 +126,8 @@ class _HandDrawAnswerViewState extends State<HandDrawAnswerView> {
             )
           : widget.questionStep.content,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 32.0),
-        child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 32),
+        child: SizedBox(
           width: MediaQuery.of(context).size.width,
           child: Column(
             children: [
@@ -161,8 +156,8 @@ class _HandDrawAnswerViewState extends State<HandDrawAnswerView> {
                         ]);
 
                         Timer(
-                          Duration(milliseconds: 200),
-                          () async => await showDialog(
+                          const Duration(milliseconds: 200),
+                          () => showDialog<void>(
                             context: context,
                             useRootNavigator: false,
                             builder: (modalContext) => _signingModal(context),
@@ -171,9 +166,10 @@ class _HandDrawAnswerViewState extends State<HandDrawAnswerView> {
                       }
                     : null,
                 label: Text(
-                    'Clique aqui para ${_resultFile != null ? 'refazer a assinatura' : 'assinar na tela'}'),
-                icon: Icon(Icons.draw),
-              )
+                  'Clique aqui para ${_resultFile != null ? 'refazer a assinatura' : 'assinar na tela'}',
+                ),
+                icon: const Icon(Icons.draw),
+              ),
             ],
           ),
         ),
@@ -183,14 +179,14 @@ class _HandDrawAnswerViewState extends State<HandDrawAnswerView> {
 
   Widget _signingModal(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final double height = 50;
+    const double height = 50;
 
     return Material(
       color: Colors.white,
       child: Column(
         children: [
           Container(
-            color: Color(0x99D2D5DA),
+            color: const Color(0x99D2D5DA),
             height: height,
             child: Row(
               children: [
@@ -200,10 +196,10 @@ class _HandDrawAnswerViewState extends State<HandDrawAnswerView> {
                     onPressed: () {
                       _closeModal(context);
                     },
-                    icon: Icon(
+                    icon: const Icon(
                       Icons.arrow_back,
                     ),
-                    label: Text(
+                    label: const Text(
                       'Voltar',
                       style: TextStyle(fontSize: 17),
                     ),
@@ -213,8 +209,8 @@ class _HandDrawAnswerViewState extends State<HandDrawAnswerView> {
                   height: height,
                   child: TextButton.icon(
                     onPressed: _controller.clear,
-                    icon: Icon(Icons.close),
-                    label: Text(
+                    icon: const Icon(Icons.close),
+                    label: const Text(
                       'Limpar',
                       style: TextStyle(fontSize: 17),
                     ),
@@ -226,34 +222,32 @@ class _HandDrawAnswerViewState extends State<HandDrawAnswerView> {
                     onPressed: () {
                       _validateSigning(context);
                     },
-                    icon: Icon(
+                    icon: const Icon(
                       Icons.check,
                     ),
-                    label: Text(
+                    label: const Text(
                       'Validar',
                       style: TextStyle(fontSize: 17),
                     ),
                   ),
                 ),
-                Spacer(),
+                const Spacer(),
                 Text(
                   _nameController.text,
                 ),
-                SizedBox(
+                const SizedBox(
                   width: 16,
                 ),
               ],
             ),
           ),
           Expanded(
-            child: Container(
+            child: SizedBox(
               width: size.width > size.height ? size.width : size.height,
               child: HandSignature(
                 control: _controller,
-                color: Colors.black,
-                width: 2.0,
-                maxWidth: 8.0,
-                type: SignatureDrawType.shape,
+                width: 2,
+                maxWidth: 8,
               ),
             ),
           ),
@@ -283,21 +277,23 @@ class _HandDrawAnswerViewState extends State<HandDrawAnswerView> {
           _resultFile = file;
         });
 
-        await _checkValidation();
+        _checkValidation();
 
         if (_isValid) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("A assinatura é válida."),
-            ),
-          );
-          _closeModal(context);
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('A assinatura é válida.'),
+              ),
+            );
+            await _closeModal(context);
+          }
         }
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("Por favor, faça a sua assinatura antes de enviar."),
+          content: Text('Por favor, faça a sua assinatura antes de enviar.'),
         ),
       );
     }
@@ -307,10 +303,10 @@ class _HandDrawAnswerViewState extends State<HandDrawAnswerView> {
     await SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
-      DeviceOrientation.landscapeRight,
-      DeviceOrientation.landscapeLeft,
     ]);
 
-    Navigator.pop(context);
+    if (context.mounted) {
+      Navigator.pop(context);
+    }
   }
 }
