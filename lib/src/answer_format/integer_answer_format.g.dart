@@ -8,7 +8,7 @@ part of 'integer_answer_format.dart';
 
 IntegerAnswerFormat _$IntegerAnswerFormatFromJson(Map<String, dynamic> json) =>
     IntegerAnswerFormat(
-      defaultValue: (json['defaultValue'] as num?)?.toInt(),
+      defaultValue: (json['defaultValue'] as num?)?.toDouble(),
       hint: json['hint'] as String? ?? '',
       savedResult: json['savedResult'] == null
           ? null

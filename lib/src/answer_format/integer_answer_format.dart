@@ -7,7 +7,7 @@ part 'integer_answer_format.g.dart';
 
 @JsonSerializable()
 class IntegerAnswerFormat implements AnswerFormat {
-  final int? defaultValue;
+  final double? defaultValue;
   final String hint;
   final IntegerQuestionResult? savedResult;
   final bool isChildQuestion;
