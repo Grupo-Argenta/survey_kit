@@ -6,22 +6,23 @@ import 'package:json_annotation/json_annotation.dart';
 part 'integer_question_result.g.dart';
 
 @JsonSerializable(explicitToJson: true)
-class IntegerQuestionResult extends QuestionResult<int?> {
+class IntegerQuestionResult extends QuestionResult<double?> {
   IntegerQuestionResult({
     required Identifier id,
     required DateTime startDate,
     required DateTime endDate,
     required String valueIdentifier,
-    required int? result,
+    required double? result,
   }) : super(
-          id: id,
-          startDate: startDate,
-          endDate: endDate,
-          valueIdentifier: valueIdentifier,
-          result: result,
-        );
+         id: id,
+         startDate: startDate,
+         endDate: endDate,
+         valueIdentifier: valueIdentifier,
+         result: result,
+       );
 
-  factory IntegerQuestionResult.fromJson(Map<String, dynamic> json) => _$IntegerQuestionResultFromJson(json);
+  factory IntegerQuestionResult.fromJson(Map<String, dynamic> json) =>
+      _$IntegerQuestionResultFromJson(json);
 
   Map<String, dynamic> toJson() => _$IntegerQuestionResultToJson(this);
 

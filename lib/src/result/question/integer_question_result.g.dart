@@ -13,7 +13,7 @@ IntegerQuestionResult _$IntegerQuestionResultFromJson(
       startDate: DateTime.parse(json['startDate'] as String),
       endDate: DateTime.parse(json['endDate'] as String),
       valueIdentifier: json['valueIdentifier'] as String,
-      result: (json['result'] as num?)?.toInt(),
+      result: (json['result'] as num?)?.toDouble(),
     );
 
 Map<String, dynamic> _$IntegerQuestionResultToJson(
