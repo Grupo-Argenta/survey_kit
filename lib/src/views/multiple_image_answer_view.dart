@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:survey_kit/survey_kit.dart';
+import 'package:uuid/uuid.dart';
 
 class MultipleImageAnswerView extends StatefulWidget {
   const MultipleImageAnswerView({
@@ -175,86 +176,90 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
 
       var control = false;
       // New Camera implementation using cameraawesome
-      // ignore: use_build_context_synchronously
-      await showDialog<void>(
-        context: context,
-        useRootNavigator: false,
-        builder: (BuildContext contextDialog) => CameraAwesomeBuilder.custom(
-          enablePhysicalButton: true,
-          builder: (state, preview) {
-            state.captureState$.listen((event) {
-              if (event?.status == MediaCaptureStatus.capturing) {
-                control = false;
-              }
-              if (event?.status == MediaCaptureStatus.success &&
-                  control == false) {
-                event?.captureRequest.when(
-                  single: (single) async {
-                    if (single.file?.path != null) {
-                      final file = File(single.file!.path);
-                      final result = await showDialog<bool>(
-                        context: contextDialog,
-                        useRootNavigator: false,
-                        builder: (BuildContext newContext) =>
-                            _picturePreview(file, newContext),
-                      );
+      if (context.mounted) {
+        await showDialog<void>(
+          context: context,
+          useRootNavigator: false,
+          builder: (BuildContext contextDialog) => CameraAwesomeBuilder.custom(
+            enablePhysicalButton: true,
+            builder: (state, preview) {
+              state.captureState$.listen((event) {
+                if (event?.status == MediaCaptureStatus.capturing) {
+                  control = false;
+                }
+                if (event?.status == MediaCaptureStatus.success &&
+                    control == false) {
+                  event?.captureRequest.when(
+                    single: (single) async {
+                      if (single.file?.path != null) {
+                        final file = File(single.file!.path);
+                        final result = await showDialog<bool>(
+                          context: contextDialog,
+                          useRootNavigator: false,
+                          builder: (BuildContext newContext) =>
+                              _picturePreview(file, newContext),
+                        );
 
-                      if (result == true) {
-                        setState(() {
-                          filePaths.add(single.file!.path);
-                          _isValid = true;
-                          _changed = true;
-                        });
+                        if (result == true) {
+                          setState(() {
+                            filePaths.add(single.file!.path);
+                            _isValid = true;
+                            _changed = true;
+                          });
 
-                        Navigator.of(context).pop();
-                        Navigator.of(context).pop();
+                          if (context.mounted) {
+                            Navigator.of(context).pop();
+                            Navigator.of(context).pop();
+                          }
 
-                        if (!file.existsSync()) {
-                          throw Exception('Erro ao bater foto');
+                          if (!file.existsSync()) {
+                            throw Exception('Erro ao bater foto');
+                          }
+                        } else {
+                          control = true;
                         }
-                      } else {
-                        control = true;
                       }
-                    }
-                  },
-                );
-              }
-            });
+                    },
+                  );
+                }
+              });
 
-            return AwesomeCameraLayout(
-              state: state,
-              topActions: const SizedBox.shrink(),
-              middleContent: const SizedBox.shrink(),
-              bottomActions: AwesomeBottomActions(
+              return AwesomeCameraLayout(
                 state: state,
-                left: AwesomeFlashButton(state: state),
-                right: const SizedBox.shrink(),
-              ),
-            );
-          },
-          saveConfig: SaveConfig.photo(
-            pathBuilder: (sensors) async {
-              final extDir = await getTemporaryDirectory();
-              final testDir = await Directory(
-                '${extDir.path}/camerawesome',
-              ).create(recursive: true);
-              final filePath =
-                  '${testDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
-
-              await crashlytics.log(
-                'Camera image picker successfully opened',
+                topActions: const SizedBox.shrink(),
+                middleContent: const SizedBox.shrink(),
+                bottomActions: AwesomeBottomActions(
+                  state: state,
+                  left: AwesomeFlashButton(state: state),
+                  right: const SizedBox.shrink(),
+                ),
               );
-
-              return SingleCaptureRequest(filePath, sensors.first);
             },
+            saveConfig: SaveConfig.photo(
+              pathBuilder: (sensors) async {
+                final appDir = await getApplicationDocumentsDirectory();
+
+                final newDir = await Directory(
+                  '${appDir.path}/survey-kit',
+                ).create(recursive: true);
+
+                final filePath = '${newDir.path}/${const Uuid().v4()}.jpg';
+
+                await crashlytics.log(
+                  'Camera image picker successfully opened. Image: $filePath',
+                );
+
+                return SingleCaptureRequest(filePath, sensors.first);
+              },
+            ),
+            previewFit: CameraPreviewFit.contain,
+            sensorConfig: SensorConfig.single(
+              sensor: Sensor.position(SensorPosition.back),
+              aspectRatio: CameraAspectRatios.ratio_16_9,
+            ),
           ),
-          previewFit: CameraPreviewFit.contain,
-          sensorConfig: SensorConfig.single(
-            sensor: Sensor.position(SensorPosition.back),
-            aspectRatio: CameraAspectRatios.ratio_16_9,
-          ),
-        ),
-      );
+        );
+      }
     } catch (err, stacktrace) {
       final status = await Permission.camera.status;
       await crashlytics.setCustomKey('camera_permission', status.toString());
@@ -277,9 +282,34 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
 
       final picture = await _picker.pickImage(source: ImageSource.gallery);
 
-      await picture?.readAsBytes().then((value) {
+      // await picture?.readAsBytes().then((value) {
+      //   setState(() {
+      //     filePaths.add(picture.path);
+      //
+      //     if (filePaths.isNotEmpty) {
+      //       _isValid = true;
+      //       _changed = true;
+      //     }
+      //   });
+      //
+      //   Navigator.of(context).pop();
+      // });
+      // await crashlytics.log('Gallery image picker successfully opened');
+
+      if (picture != null) {
+        final File imageFile = File(picture.path);
+
+        final appDir = await getApplicationDocumentsDirectory();
+        final newDir = await Directory(
+          '${appDir.path}/survey-kit',
+        ).create(recursive: true);
+
+        final newPath = '${newDir.path}/${const Uuid().v4()}.jpg';
+
+        final renamedImage = await imageFile.copy(newPath);
+
         setState(() {
-          filePaths.add(picture.path);
+          filePaths.add(renamedImage.path);
 
           if (filePaths.isNotEmpty) {
             _isValid = true;
@@ -287,9 +317,13 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
           }
         });
 
-        Navigator.of(context).pop();
-      });
-      await crashlytics.log('Gallery image picker successfully opened');
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+        await crashlytics.log(
+          'Gallery image picker successfully opened. Image: $renamedImage.path',
+        );
+      }
     } catch (err, stacktrace) {
       final status = await Permission.photos.status;
       await crashlytics.setCustomKey('camera_permission', status.toString());
@@ -380,7 +414,6 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
           ),
           Expanded(
             child: Align(
-              alignment: Alignment.center,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
@@ -389,14 +422,14 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
                       Navigator.of(newContext).pop(false);
                     },
                     iconSize: 48,
-                    icon: Icon(Icons.clear, color: Colors.white),
+                    icon: const Icon(Icons.clear, color: Colors.white),
                   ),
                   IconButton(
                     onPressed: () {
                       Navigator.of(newContext).pop(true);
                     },
                     iconSize: 48,
-                    icon: Icon(Icons.check, color: Colors.white),
+                    icon: const Icon(Icons.check, color: Colors.white),
                   ),
                 ],
               ),
@@ -407,7 +440,7 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
     );
   }
 
-  _retrieveLostData() async {
+  Future<void> _retrieveLostData() async {
     final response = await _picker.retrieveLostData();
 
     if (response.isEmpty) {
@@ -488,13 +521,23 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
             ),
             TextButton(
               onPressed: () {
-                setState(() {
-                  filePaths.remove(filePath);
-                  _isValid = filePaths.isNotEmpty;
-                });
-                Navigator.of(dialogContext).pop();
-                if (popAll) {
-                  Navigator.of(context).pop();
+                try {
+                  final File file = File(filePath);
+
+                  if (file.existsSync()) {
+                    file.delete();
+                  }
+                } catch (e) {
+                  //
+                } finally {
+                  setState(() {
+                    filePaths.remove(filePath);
+                    _isValid = filePaths.isNotEmpty;
+                  });
+                  Navigator.of(dialogContext).pop();
+                  if (popAll) {
+                    Navigator.of(context).pop();
+                  }
                 }
               },
               child: const Text('Deletar', style: TextStyle(color: Colors.red)),

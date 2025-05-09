@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hand_signature/signature.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:photo_view/photo_view.dart';
 import 'package:survey_kit/survey_kit.dart';
+import 'package:uuid/uuid.dart';
 
 class HandDrawAnswerView extends StatefulWidget {
   const HandDrawAnswerView({
@@ -170,6 +172,47 @@ class _HandDrawAnswerViewState extends State<HandDrawAnswerView> {
                 ),
                 icon: const Icon(Icons.draw),
               ),
+              if (_resultFile != null)
+                GestureDetector(
+                  onTap: _previewImage,
+                  child: Stack(
+                    alignment: Alignment.topRight,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Image.file(
+                          File(_resultFile!.path),
+                          width: 200,
+                          height: 70,
+                          fit: BoxFit.scaleDown,
+                        ),
+                      ),
+                      Positioned(
+                        top: -10,
+                        right: 5,
+                        child: IconButton(
+                          onPressed: () {
+                            _confirmDeleteImage(
+                              context,
+                              popAll: false,
+                            );
+                          },
+                          icon: const DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10)),
+                            ),
+                            child: Icon(
+                              Icons.delete,
+                              color: Colors.red,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
             ],
           ),
         ),
@@ -258,20 +301,22 @@ class _HandDrawAnswerViewState extends State<HandDrawAnswerView> {
 
   Future<void> _validateSigning(BuildContext context) async {
     if (_controller.paths.isNotEmpty) {
-      final stream2 = await _controller.toImage(
+      final stream = await _controller.toImage(
         background: Colors.white,
       );
 
-      if (stream2 != null) {
-        final directory = await getTemporaryDirectory();
+      if (stream != null) {
+        final appDir = await getApplicationDocumentsDirectory();
 
-        // Create a unique file name
-        final imagePath =
-            '${directory.path}/saved_image_${DateTime.now().millisecondsSinceEpoch}.png';
+        final newDir = await Directory(
+          '${appDir.path}/survey-kit',
+        ).create(recursive: true);
+
+        final filePath = '${newDir.path}/${const Uuid().v4()}.jpg';
 
         // Write the image data to the file
-        final file = File(imagePath);
-        await file.writeAsBytes(stream2.buffer.asUint8List());
+        final file = File(filePath);
+        await file.writeAsBytes(stream.buffer.asUint8List());
 
         setState(() {
           _resultFile = file;
@@ -308,5 +353,82 @@ class _HandDrawAnswerViewState extends State<HandDrawAnswerView> {
     if (context.mounted) {
       Navigator.pop(context);
     }
+  }
+
+  void _previewImage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (context) => Scaffold(
+          backgroundColor: Colors.black,
+          appBar: AppBar(backgroundColor: Colors.black),
+          body: Stack(
+            children: [
+              Center(
+                child: PhotoView(
+                  imageProvider: FileImage(File(_resultFile!.path)),
+                ),
+              ),
+              Positioned(
+                top: 20,
+                right: 20,
+                child: IconButton(
+                  icon: const Icon(
+                    Icons.delete,
+                    color: Colors.red,
+                    size: 32,
+                  ),
+                  onPressed: () => _confirmDeleteImage(context),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _confirmDeleteImage(
+    BuildContext context, {
+    bool popAll = true,
+  }) {
+    showDialog<void>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('Confirmar exclusão'),
+          content: const Text('Tem certeza que deseja excluir esta imagem?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () {
+                try {
+                  if (_resultFile != null) {
+                    if (_resultFile!.existsSync()) {
+                      _resultFile!.delete();
+                    }
+                  }
+                } catch (e) {
+                  //
+                } finally {
+                  setState(() {
+                    _resultFile = null;
+                    _isValid = false;
+                  });
+                  Navigator.of(dialogContext).pop();
+                  if (popAll) {
+                    Navigator.of(context).pop();
+                  }
+                }
+              },
+              child: const Text('Deletar', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
   }
 }
