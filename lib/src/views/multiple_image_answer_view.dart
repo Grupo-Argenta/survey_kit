@@ -521,23 +521,14 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
             ),
             TextButton(
               onPressed: () {
-                try {
-                  final File file = File(filePath);
-
-                  if (file.existsSync()) {
-                    file.delete();
-                  }
-                } catch (e) {
-                  //
-                } finally {
-                  setState(() {
-                    filePaths.remove(filePath);
-                    _isValid = filePaths.isNotEmpty;
-                  });
-                  Navigator.of(dialogContext).pop();
-                  if (popAll) {
-                    Navigator.of(context).pop();
-                  }
+                setState(() {
+                  _changed = true;
+                  filePaths.remove(filePath);
+                  _isValid = filePaths.isNotEmpty;
+                });
+                Navigator.of(dialogContext).pop();
+                if (popAll) {
+                  Navigator.of(context).pop();
                 }
               },
               child: const Text('Deletar', style: TextStyle(color: Colors.red)),

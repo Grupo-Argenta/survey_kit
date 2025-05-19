@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:survey_kit/src/configuration/app_bar_configuration.dart';
+import 'package:survey_kit/src/configuration/survey_step_configuration.dart';
 import 'package:survey_kit/src/controller/survey_controller.dart';
 import 'package:survey_kit/src/navigator/navigable_task_navigator.dart';
 import 'package:survey_kit/src/navigator/ordered_task_navigator.dart';
@@ -17,6 +18,19 @@ import 'package:survey_kit/src/views/widget/survey_app_bar.dart';
 import 'package:survey_kit/src/widget/survey_progress_configuration.dart';
 
 class SurveyKit extends StatefulWidget {
+  const SurveyKit({
+    super.key,
+    required this.task,
+    required this.onResult,
+    this.themeData,
+    this.surveyController,
+    this.appBar,
+    this.surveyStepConfiguration,
+    this.showProgress,
+    this.surveyProgressbarConfiguration,
+    this.localizations,
+  });
+
   /// [Task] for the configuraton of the survey
   final Task task;
 
@@ -24,7 +38,7 @@ class SurveyKit extends StatefulWidget {
   final ThemeData? themeData;
 
   /// Function which is called after the results are collected
-  final Function(SurveyResult) onResult;
+  final dynamic Function(SurveyResult) onResult;
 
   /// [SurveyController] to override the navigation methods
   /// onNextStep, onBackStep, onCloseSurvey
@@ -32,6 +46,9 @@ class SurveyKit extends StatefulWidget {
 
   /// The appbar that is shown at the top
   final Widget Function(AppBarConfiguration appBarConfiguration)? appBar;
+
+  /// Extra configuration for the base survey step
+  final SurveyStepConfiguration? surveyStepConfiguration;
 
   /// If the progressbar shoud be show in the appbar
   final bool? showProgress;
@@ -41,19 +58,8 @@ class SurveyKit extends StatefulWidget {
 
   final Map<String, String>? localizations;
 
-  const SurveyKit({
-    required this.task,
-    required this.onResult,
-    this.themeData,
-    this.surveyController,
-    this.appBar,
-    this.showProgress,
-    this.surveyProgressbarConfiguration,
-    this.localizations,
-  });
-
   @override
-  _SurveyKitState createState() => _SurveyKitState();
+  State<SurveyKit> createState() => _SurveyKitState();
 }
 
 class _SurveyKitState extends State<SurveyKit> {
@@ -93,22 +99,21 @@ class _SurveyKitState extends State<SurveyKit> {
           ),
           Provider<bool>.value(value: widget.showProgress ?? true),
           Provider<SurveyProgressConfiguration>.value(
-            value:
-                widget.surveyProgressbarConfiguration ??
+            value: widget.surveyProgressbarConfiguration ??
                 SurveyProgressConfiguration(),
           ),
           Provider<Map<String, String>?>.value(value: widget.localizations),
         ],
         child: BlocProvider(
-          create:
-              (BuildContext context) => SurveyPresenter(
-                taskNavigator: _taskNavigator,
-                onResult: widget.onResult,
-              ),
+          create: (BuildContext context) => SurveyPresenter(
+            taskNavigator: _taskNavigator,
+            onResult: widget.onResult,
+          ),
           child: SurveyPage(
             length: widget.task.steps.length,
             onResult: widget.onResult,
             appBar: widget.appBar,
+            surveyStepConfiguration: widget.surveyStepConfiguration,
           ),
         ),
       ),
@@ -117,14 +122,23 @@ class _SurveyKitState extends State<SurveyKit> {
 }
 
 class SurveyPage extends StatefulWidget {
+  const SurveyPage({
+    super.key,
+    required this.length,
+    required this.onResult,
+    this.appBar,
+    this.surveyStepConfiguration,
+  });
+
   final int length;
   final Widget Function(AppBarConfiguration appBarConfiguration)? appBar;
-  final Function(SurveyResult) onResult;
+  final dynamic Function(SurveyResult) onResult;
 
-  const SurveyPage({required this.length, required this.onResult, this.appBar});
+  /// Extra configuration for the base survey step
+  final SurveyStepConfiguration? surveyStepConfiguration;
 
   @override
-  _SurveyPageState createState() => _SurveyPageState();
+  State<SurveyPage> createState() => _SurveyPageState();
 }
 
 class _SurveyPageState extends State<SurveyPage>
@@ -159,37 +173,32 @@ class _SurveyPageState extends State<SurveyPage>
         if (state is PresentingSurveyState) {
           return Scaffold(
             backgroundColor: Colors.transparent,
-            appBar:
-                state.currentStep.showAppBar
-                    ? PreferredSize(
-                      preferredSize: const Size(double.infinity, 70.0),
-                      child:
-                          widget.appBar != null
-                              ? widget.appBar!.call(state.appBarConfiguration)
-                              : SurveyAppBar(
-                                appBarConfiguration: state.appBarConfiguration,
-                              ),
-                    )
-                    : null,
+            appBar: state.currentStep.showAppBar
+                ? PreferredSize(
+                    preferredSize: const Size(double.infinity, 70),
+                    child: widget.appBar != null
+                        ? widget.appBar!.call(state.appBarConfiguration)
+                        : SurveyAppBar(
+                            appBarConfiguration: state.appBarConfiguration,
+                          ),
+                  )
+                : null,
             body: TabBarView(
               physics: const NeverScrollableScrollPhysics(),
               controller: tabController,
-              children:
-                  state.steps
-                      .map(
-                        (e) => _SurveyView(
-                          id: e.stepIdentifier.id,
-                          createView:
-                              () => e.createView(
-                                questionResult: state.questionResults
-                                    .firstWhereOrNull(
-                                      (element) =>
-                                          element.id == e.stepIdentifier,
-                                    ),
-                              ),
+              children: state.steps
+                  .map(
+                    (e) => _SurveyView(
+                      id: e.stepIdentifier.id,
+                      createView: () => e.createView(
+                        questionResult: state.questionResults.firstWhereOrNull(
+                          (element) => element.id == e.stepIdentifier,
                         ),
-                      )
-                      .toList(),
+                        surveyStepConfiguration: widget.surveyStepConfiguration,
+                      ),
+                    ),
+                  )
+                  .toList(),
             ),
           );
         } else if (state is SurveyResultState && state.currentStep != null) {

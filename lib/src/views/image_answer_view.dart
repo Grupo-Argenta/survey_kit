@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:camerawesome/camerawesome_plugin.dart';
@@ -43,11 +44,13 @@ class _ImageAnswerViewState extends State<ImageAnswerView> {
 
     final savedResult = _imageAnswerFormat.savedResult;
     if (widget.result?.result != null) {
+      inspect({'WIDGET.RESULT': widget.result?.result});
       filePath = widget.result!.result!;
       setState(() {
         _isValid = true;
       });
     } else if (savedResult != null && savedResult.result != null) {
+      inspect({'savedResult': savedResult.result});
       filePath = savedResult.result!;
       setState(() {
         _isValid = true;
@@ -66,6 +69,7 @@ class _ImageAnswerViewState extends State<ImageAnswerView> {
     final response = await _picker.retrieveLostData();
 
     if (response.isEmpty) {
+      print('RETRIEVE IS EMPTY');
       return;
     }
 
@@ -88,6 +92,7 @@ class _ImageAnswerViewState extends State<ImageAnswerView> {
       step: widget.questionStep,
       resultFunction: () {
         if (!_changed && _imageAnswerFormat.savedResult != null) {
+          print(' USING SAVED RESULT ');
           return _imageAnswerFormat.savedResult!;
         }
 
@@ -503,23 +508,14 @@ class _ImageAnswerViewState extends State<ImageAnswerView> {
             ),
             TextButton(
               onPressed: () {
-                try {
-                  final File file = File(filePath);
-
-                  if (file.existsSync()) {
-                    file.delete();
-                  }
-                } catch (e) {
-                  //
-                } finally {
-                  setState(() {
-                    filePath = '';
-                    _isValid = false;
-                  });
-                  Navigator.of(dialogContext).pop();
-                  if (popAll) {
-                    Navigator.of(context).pop();
-                  }
+                setState(() {
+                  _changed = true;
+                  filePath = '';
+                  _isValid = false;
+                });
+                Navigator.of(dialogContext).pop();
+                if (popAll) {
+                  Navigator.of(context).pop();
                 }
               },
               child: const Text('Deletar', style: TextStyle(color: Colors.red)),

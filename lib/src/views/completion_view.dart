@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:survey_kit/src/configuration/survey_step_configuration.dart';
 import 'package:survey_kit/src/result/step/completion_step_result.dart';
 import 'package:survey_kit/src/steps/predefined_steps/completion_step.dart';
 import 'package:survey_kit/src/views/widget/step_view.dart';
 
 class CompletionView extends StatelessWidget {
+  CompletionView({
+    super.key,
+    required this.completionStep,
+    this.assetPath = '',
+    this.surveyStepConfiguration,
+  });
+
   final CompletionStep completionStep;
   final DateTime _startDate = DateTime.now();
   final String assetPath;
-
-  CompletionView({required this.completionStep, this.assetPath = ""});
+  final SurveyStepConfiguration? surveyStepConfiguration;
 
   @override
   Widget build(BuildContext context) {
@@ -20,10 +27,12 @@ class CompletionView extends StatelessWidget {
         _startDate,
         DateTime.now(),
       ),
-      title: Text(completionStep.title,
-          style: Theme.of(context).textTheme.displayMedium),
+      title: Text(
+        completionStep.title,
+        style: Theme.of(context).textTheme.displayMedium,
+      ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 64.0),
+        padding: const EdgeInsets.symmetric(horizontal: 64),
         child: Column(
           children: [
             Text(
@@ -32,10 +41,10 @@ class CompletionView extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 32.0),
-              child: Container(
-                width: 150.0,
-                height: 150.0,
+              padding: const EdgeInsets.symmetric(vertical: 32),
+              child: SizedBox(
+                width: 150,
+                height: 150,
                 child: assetPath.isNotEmpty
                     ? Lottie.asset(
                         assetPath,
@@ -47,7 +56,7 @@ class CompletionView extends StatelessWidget {
                         repeat: false,
                       ),
               ),
-            )
+            ),
           ],
         ),
       ),

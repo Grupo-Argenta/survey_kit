@@ -1,23 +1,21 @@
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-import 'package:survey_kit/src/result/question/star_question_result.dart';
-import 'package:survey_kit/src/result/step/video_step_result.dart';
-
 import 'package:json_annotation/json_annotation.dart';
+import 'package:survey_kit/src/result/step/video_step_result.dart';
 import 'package:survey_kit/survey_kit.dart';
 
 part 'step_result.g.dart';
 
 @JsonSerializable(explicitToJson: true)
 class StepResult extends Result {
-  @_Converter()
-  final List<QuestionResult> results;
-
   StepResult({
-    required Identifier? id,
-    required DateTime startDate,
-    required DateTime endDate,
+    required super.id,
+    required super.startDate,
+    required super.endDate,
     required this.results,
-  }) : super(id: id, startDate: startDate, endDate: endDate);
+  });
+
+  @_Converter()
+  final List<QuestionResult<dynamic>> results;
 
   factory StepResult.fromQuestion({required QuestionResult questionResult}) {
     return StepResult(
@@ -112,10 +110,10 @@ class _Converter implements JsonConverter<List<QuestionResult>, Object> {
         final qrJson = qr.toJson();
         qrJson['type'] = 'ImageQuestionResult';
         allQuestionResultsEncoded.add(qrJson);
-			} else if (qr is MultipleImageQuestionResult){
-				final qrJson = qr.toJson();
-				qrJson['type'] = 'MultipleImageQuestionResult';
-				allQuestionResultsEncoded.add(qrJson);
+      } else if (qr is MultipleImageQuestionResult) {
+        final qrJson = qr.toJson();
+        qrJson['type'] = 'MultipleImageQuestionResult';
+        allQuestionResultsEncoded.add(qrJson);
       } else if (qr is HandDrawQuestionResult) {
         final qrJson = qr.toJson();
         qrJson['type'] = 'HandDrawQuestionResult';
@@ -131,7 +129,7 @@ class _Converter implements JsonConverter<List<QuestionResult>, Object> {
   @override
   List<QuestionResult> fromJson(Object json) {
     final List<QuestionResult> results = [];
-    for (var element in json as List<dynamic>) {
+    for (final element in json as List<dynamic>) {
       final qData = element as Map<String, dynamic>;
       final qType = qData['type'] as String;
 

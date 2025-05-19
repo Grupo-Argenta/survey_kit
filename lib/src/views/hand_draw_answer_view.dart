@@ -405,23 +405,14 @@ class _HandDrawAnswerViewState extends State<HandDrawAnswerView> {
             ),
             TextButton(
               onPressed: () {
-                try {
-                  if (_resultFile != null) {
-                    if (_resultFile!.existsSync()) {
-                      _resultFile!.delete();
-                    }
-                  }
-                } catch (e) {
-                  //
-                } finally {
-                  setState(() {
-                    _resultFile = null;
-                    _isValid = false;
-                  });
-                  Navigator.of(dialogContext).pop();
-                  if (popAll) {
-                    Navigator.of(context).pop();
-                  }
+                setState(() {
+                  _changed = true;
+                  _resultFile = null;
+                  _isValid = false;
+                });
+                Navigator.of(dialogContext).pop();
+                if (popAll) {
+                  Navigator.of(context).pop();
                 }
               },
               child: const Text('Deletar', style: TextStyle(color: Colors.red)),

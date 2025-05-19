@@ -9,14 +9,13 @@ import 'package:survey_kit/src/views/widget/time_picker_widget.dart'
     as surveywidget;
 
 class TimeAnswerView extends StatefulWidget {
-  final QuestionStep questionStep;
-  final TimeQuestionResult? result;
-
   const TimeAnswerView({
-    Key? key,
+    super.key,
     required this.questionStep,
     required this.result,
-  }) : super(key: key);
+  });
+  final QuestionStep questionStep;
+  final TimeQuestionResult? result;
 
   @override
   _TimeAnswerViewState createState() => _TimeAnswerViewState();

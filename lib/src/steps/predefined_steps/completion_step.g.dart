@@ -19,7 +19,7 @@ CompletionStep _$CompletionStepFromJson(Map<String, dynamic> json) =>
           ? null
           : CompletionStepResult.fromJson(
               json['result'] as Map<String, dynamic>),
-      assetPath: json['assetPath'] as String? ?? "",
+      assetPath: json['assetPath'] as String? ?? '',
     );
 
 Map<String, dynamic> _$CompletionStepToJson(CompletionStep instance) =>

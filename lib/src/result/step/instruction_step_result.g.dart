@@ -9,7 +9,7 @@ part of 'instruction_step_result.dart';
 InstructionStepResult _$InstructionStepResultFromJson(
         Map<String, dynamic> json) =>
     InstructionStepResult(
-      Identifier.fromJson(json['id'] as Map<String, dynamic>),
+      StepIdentifier.fromJson(json['id'] as Map<String, dynamic>),
       DateTime.parse(json['startDate'] as String),
       DateTime.parse(json['endDate'] as String),
     );

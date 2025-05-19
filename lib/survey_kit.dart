@@ -18,6 +18,7 @@ export 'src/answer_format/text_answer_format.dart';
 export 'src/answer_format/text_choice.dart';
 export 'src/answer_format/time_answer_formart.dart';
 export 'src/configuration/app_bar_configuration.dart';
+export 'src/configuration/survey_step_configuration.dart';
 export 'src/controller/survey_controller.dart';
 export 'src/navigator/navigable_task_navigator.dart';
 export 'src/navigator/ordered_task_navigator.dart';
