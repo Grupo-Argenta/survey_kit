@@ -1,6 +1,4 @@
-import 'dart:developer';
 import 'dart:io';
-
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
@@ -44,13 +42,11 @@ class _ImageAnswerViewState extends State<ImageAnswerView> {
 
     final savedResult = _imageAnswerFormat.savedResult;
     if (widget.result?.result != null) {
-      inspect({'WIDGET.RESULT': widget.result?.result});
       filePath = widget.result!.result!;
       setState(() {
         _isValid = true;
       });
     } else if (savedResult != null && savedResult.result != null) {
-      inspect({'savedResult': savedResult.result});
       filePath = savedResult.result!;
       setState(() {
         _isValid = true;
@@ -91,8 +87,10 @@ class _ImageAnswerViewState extends State<ImageAnswerView> {
     return StepView(
       step: widget.questionStep,
       resultFunction: () {
-        if (!_changed && _imageAnswerFormat.savedResult != null) {
-          print(' USING SAVED RESULT ');
+        // Uses saved result only if there is not a local result
+        if (!_changed &&
+            _imageAnswerFormat.savedResult != null &&
+            widget.result == null) {
           return _imageAnswerFormat.savedResult!;
         }
 

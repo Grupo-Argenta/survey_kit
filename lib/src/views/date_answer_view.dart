@@ -52,7 +52,10 @@ class _DateAnswerViewState extends State<DateAnswerView> {
     return StepView(
       step: widget.questionStep,
       resultFunction: () {
-        if (!_changed && _dateAnswerFormat.savedResult != null) {
+        // Uses saved result only if there is not a local result
+        if (!_changed &&
+            _dateAnswerFormat.savedResult != null &&
+            widget.result == null) {
           return _dateAnswerFormat.savedResult!;
         }
 

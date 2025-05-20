@@ -40,7 +40,10 @@ class _BooleanAnswerViewState extends State<BooleanAnswerView> {
     return StepView(
       step: widget.questionStep,
       resultFunction: () {
-        if (!_changed && _answerFormat.savedResult != null) {
+        // Uses saved result only if there is not a local result
+        if (!_changed &&
+            _answerFormat.savedResult != null &&
+            widget.result == null) {
           return _answerFormat.savedResult!;
         }
 

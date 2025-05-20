@@ -40,7 +40,10 @@ class _ScaleAnswerViewState extends State<ScaleAnswerView> {
     return StepView(
       step: widget.questionStep,
       resultFunction: () {
-        if (!_changed && _scaleAnswerFormat.savedResult != null) {
+        // Uses saved result only if there is not a local result
+        if (!_changed &&
+            _scaleAnswerFormat.savedResult != null &&
+            widget.result == null) {
           return _scaleAnswerFormat.savedResult!;
         }
 

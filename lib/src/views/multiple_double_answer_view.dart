@@ -85,7 +85,10 @@ class _MultipleDoubleAnswerViewState extends State<MultipleDoubleAnswerView> {
     return StepView(
       step: widget.questionStep,
       resultFunction: () {
-        if (!_changed && _multipleDoubleAnswer.savedResult != null) {
+        // Uses saved result only if there is not a local result
+        if (!_changed &&
+            _multipleDoubleAnswer.savedResult != null &&
+            widget.result == null) {
           return _multipleDoubleAnswer.savedResult!;
         }
 

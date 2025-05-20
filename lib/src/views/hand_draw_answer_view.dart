@@ -41,21 +41,18 @@ class _HandDrawAnswerViewState extends State<HandDrawAnswerView> {
     _handDrawAnswerFormat =
         widget.questionStep.answerFormat as HandDrawAnswerFormat;
 
+    final savedResult = _handDrawAnswerFormat.savedResult;
+
+    // Uses locally saved result if it exists
     if (widget.result != null && widget.result!.result != null) {
       _nameController.text = widget.result!.result!.name;
+
+      _checkIfFileExists(widget.result!.result!.signatureImageUrl);
     }
-
-    final savedResult = _handDrawAnswerFormat.savedResult;
-    if (savedResult != null && savedResult.result != null) {
-      final File file = File(savedResult.result!.signatureImageUrl);
-
-      if (file.existsSync()) {
-        _resultFile = file;
-      } else {
-        throw StateError('Provided file does not exists');
-      }
-
+    // Else, uses saved result if it exists
+    else if (savedResult != null && savedResult.result != null) {
       _nameController.text = savedResult.result!.name;
+      _checkIfFileExists(savedResult.result!.signatureImageUrl);
     }
 
     _checkValidation();
@@ -65,6 +62,16 @@ class _HandDrawAnswerViewState extends State<HandDrawAnswerView> {
     Future.delayed(Duration.zero, () {
       inputFocus.requestFocus();
     });
+  }
+
+  void _checkIfFileExists(String path) {
+    final File file = File(path);
+
+    if (file.existsSync()) {
+      _resultFile = file;
+    } else {
+      throw StateError('Provided file does not exists');
+    }
   }
 
   @override
@@ -99,7 +106,10 @@ class _HandDrawAnswerViewState extends State<HandDrawAnswerView> {
     return StepView(
       step: widget.questionStep,
       resultFunction: () {
-        if (!_changed && _handDrawAnswerFormat.savedResult != null) {
+        // Uses saved result only if there is not a local result
+        if (!_changed &&
+            _handDrawAnswerFormat.savedResult != null &&
+            widget.result == null) {
           return _handDrawAnswerFormat.savedResult!;
         }
 
