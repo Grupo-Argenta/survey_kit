@@ -42,7 +42,10 @@ class _SingleChoiceAnswerViewState extends State<SingleChoiceAnswerView> {
     return StepView(
       step: widget.questionStep,
       resultFunction: () {
-        if (!_changed && _singleChoiceAnswerFormat.savedResult != null) {
+        // Uses saved result only if there is not a local result
+        if (!_changed &&
+            _singleChoiceAnswerFormat.savedResult != null &&
+            widget.result == null) {
           return _singleChoiceAnswerFormat.savedResult!;
         } else {
           final newResult = SingleChoiceQuestionResult(

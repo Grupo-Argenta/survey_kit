@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
@@ -66,6 +65,7 @@ class _ImageAnswerViewState extends State<ImageAnswerView> {
     final response = await _picker.retrieveLostData();
 
     if (response.isEmpty) {
+      print('RETRIEVE IS EMPTY');
       return;
     }
 
@@ -87,7 +87,10 @@ class _ImageAnswerViewState extends State<ImageAnswerView> {
     return StepView(
       step: widget.questionStep,
       resultFunction: () {
-        if (!_changed && _imageAnswerFormat.savedResult != null) {
+        // Uses saved result only if there is not a local result
+        if (!_changed &&
+            _imageAnswerFormat.savedResult != null &&
+            widget.result == null) {
           return _imageAnswerFormat.savedResult!;
         }
 
@@ -503,23 +506,14 @@ class _ImageAnswerViewState extends State<ImageAnswerView> {
             ),
             TextButton(
               onPressed: () {
-                try {
-                  final File file = File(filePath);
-
-                  if (file.existsSync()) {
-                    file.delete();
-                  }
-                } catch (e) {
-                  //
-                } finally {
-                  setState(() {
-                    filePath = '';
-                    _isValid = false;
-                  });
-                  Navigator.of(dialogContext).pop();
-                  if (popAll) {
-                    Navigator.of(context).pop();
-                  }
+                setState(() {
+                  _changed = true;
+                  filePath = '';
+                  _isValid = false;
+                });
+                Navigator.of(dialogContext).pop();
+                if (popAll) {
+                  Navigator.of(context).pop();
                 }
               },
               child: const Text('Deletar', style: TextStyle(color: Colors.red)),

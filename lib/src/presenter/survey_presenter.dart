@@ -8,20 +8,14 @@ import 'package:survey_kit/src/presenter/survey_state.dart';
 import 'package:survey_kit/src/result/question_result.dart';
 import 'package:survey_kit/src/result/step_result.dart';
 import 'package:survey_kit/src/result/survey/survey_result.dart';
-import 'package:survey_kit/src/steps/predefined_steps/completion_step.dart';
+import 'package:survey_kit/src/steps/identifier/identifier.dart';
+import 'package:survey_kit/src/steps/identifier/step_identifier.dart';
 import 'package:survey_kit/src/steps/predefined_steps/instruction_step.dart';
 import 'package:survey_kit/src/steps/predefined_steps/question_step.dart';
 import 'package:survey_kit/src/steps/step.dart';
-import 'package:survey_kit/src/steps/identifier/step_identifier.dart';
 
 //TO DO: Extract gathering of the results into another class
 class SurveyPresenter extends Bloc<SurveyEvent, SurveyState> {
-  final TaskNavigator taskNavigator;
-  final Function(SurveyResult) onResult;
-
-  Set<QuestionResult> results = {};
-  late final DateTime startDate;
-
   SurveyPresenter({
     required this.taskNavigator,
     required this.onResult,
@@ -54,37 +48,24 @@ class SurveyPresenter extends Bloc<SurveyEvent, SurveyState> {
       }
     });
 
-    this.startDate = DateTime.now();
+    startDate = DateTime.now();
     add(StartSurvey());
   }
 
+  final TaskNavigator taskNavigator;
+  final void Function(SurveyResult) onResult;
+
+  Set<QuestionResult<dynamic>> results = {};
+  late final DateTime startDate;
+
   SurveyState _handleInitialStep() {
-    Step? step = taskNavigator.firstStep();
+    final Step? step = taskNavigator.firstStep();
 
     // If first step is not the beginning of the survey
     if (taskNavigator.task.initalStepIdentifier != null) {
       // adds all results and add previous steps to history
-      for (final step in taskNavigator.task.steps) {
-        final isQuestionStep = step is QuestionStep;
-        if (isQuestionStep) {
-          _addResult(step.answerFormat.savedResult);
-        } else if (step is InstructionStep) {
-          _addResult(step.result);
-        } else if (step is CompletionStep) {
-          _addResult(step.result);
-        }
 
-        if (step.stepIdentifier.id ==
-            taskNavigator.task.initalStepIdentifier?.id) {
-          break;
-        }
-        if (isQuestionStep &&
-            step.answerFormat.isChildQuestion &&
-            step.answerFormat.savedResult == null) {
-        } else {
-          taskNavigator.record(step);
-        }
-      }
+      _insertSavedResults();
     }
 
     if (step != null) {
@@ -92,12 +73,11 @@ class SurveyPresenter extends Bloc<SurveyEvent, SurveyState> {
         currentStep: step,
         questionResults: results,
         steps: taskNavigator.task.steps,
-        result: null,
         currentStepIndex: currentStepIndex(step),
         stepCount: countSteps,
         appBarConfiguration: AppBarConfiguration(
           showProgress: step.showProgress,
-          canBack: step.canGoBack,
+          canGoBackWithLeading: step.canGoBack,
         ),
       );
     }
@@ -110,7 +90,7 @@ class SurveyPresenter extends Bloc<SurveyEvent, SurveyState> {
       startExecution: DateTime.now(),
       endExecution: DateTime.now(),
       finishReason: FinishReason.COMPLETED,
-      results: [],
+      results: const [],
       lastQuestionId: taskNavigator.peekHistory()?.stepIdentifier.id,
     );
     return SurveyResultState(
@@ -119,17 +99,66 @@ class SurveyPresenter extends Bloc<SurveyEvent, SurveyState> {
     );
   }
 
+  void _insertSavedResults({Identifier? lastAnsweredQuestionId}) {
+    final initialQuestionIndex = taskNavigator.task.steps.indexWhere(
+      (step) =>
+          step.stepIdentifier.id == taskNavigator.task.initalStepIdentifier?.id,
+    );
+
+    final lastAnsweredQuestionIndex = taskNavigator.task.steps.indexWhere(
+      (step) => step.stepIdentifier.id == lastAnsweredQuestionId?.id,
+    );
+
+    for (int index = 0; index < taskNavigator.task.steps.length; index++) {
+      final step = taskNavigator.task.steps[index];
+      final isQuestionStep = step is QuestionStep;
+
+      if (isQuestionStep) {
+        // if doesn't have a base question, adds all results
+        if (lastAnsweredQuestionId == null ||
+            // if there is a base question, adds results from all questions that come after the base one,
+            (lastAnsweredQuestionIndex > 0 &&
+                index > lastAnsweredQuestionIndex &&
+                // if they don't already have results
+                !results.any(
+                  (res) => res.id!.id == lastAnsweredQuestionId.id,
+                ))) {
+          _addResult(step.answerFormat.savedResult);
+        }
+      } else if (step is InstructionStep) {
+        _addResult(step.result);
+      }
+      // // Only adds completion step
+      // else if (step is CompletionStep && lastAnsweredQuestionId == null) {
+      //   _addResult(step.result);
+      // }
+
+      if (isQuestionStep &&
+          step.answerFormat.isChildQuestion &&
+          step.answerFormat.savedResult == null) {
+      }
+      // only records steps until initial step (that is, the first question of a new survey or last answered question of a saved survey)
+      else if (lastAnsweredQuestionId == null && index < initialQuestionIndex) {
+        taskNavigator.record(step);
+      }
+    }
+  }
+
   SurveyState _handleNextStep(
-      NextStep event, PresentingSurveyState currentState) {
+    NextStep event,
+    PresentingSurveyState currentState,
+  ) {
     _addResult(event.questionResult);
     final Step? nextStep = taskNavigator.nextStep(
-        step: currentState.currentStep, questionResult: event.questionResult);
+      step: currentState.currentStep,
+      questionResult: event.questionResult,
+    );
 
     if (nextStep == null) {
       return _handleSurveyFinished(currentState);
     }
 
-    QuestionResult? questionResult =
+    final QuestionResult<dynamic>? questionResult =
         _getResultByStepIdentifier(nextStep.stepIdentifier);
 
     _resetChildQuestionState(questionResult, currentState);
@@ -143,19 +172,21 @@ class SurveyPresenter extends Bloc<SurveyEvent, SurveyState> {
       stepCount: countSteps,
       appBarConfiguration: AppBarConfiguration(
         showProgress: nextStep.showProgress,
-        canBack: nextStep.canGoBack,
+        canGoBackWithLeading: nextStep.canGoBack,
       ),
     );
   }
 
   SurveyState _handleStepBack(
-      StepBack event, PresentingSurveyState currentState) {
+    StepBack event,
+    PresentingSurveyState currentState,
+  ) {
     _addResult(event.questionResult);
     final Step? previousStep =
         taskNavigator.previousInList(currentState.currentStep);
 
     if (previousStep != null) {
-      QuestionResult? questionResult =
+      final QuestionResult<dynamic>? questionResult =
           _getResultByStepIdentifier(previousStep.stepIdentifier);
 
       return PresentingSurveyState(
@@ -166,7 +197,7 @@ class SurveyPresenter extends Bloc<SurveyEvent, SurveyState> {
         currentStepIndex: currentStepIndex(previousStep),
         appBarConfiguration: AppBarConfiguration(
           showProgress: previousStep.showProgress,
-          canBack: previousStep.canGoBack,
+          canGoBackWithLeading: previousStep.canGoBack,
         ),
         isPreviousStep: true,
         stepCount: countSteps,
@@ -177,17 +208,26 @@ class SurveyPresenter extends Bloc<SurveyEvent, SurveyState> {
     return state;
   }
 
-  QuestionResult? _getResultByStepIdentifier(StepIdentifier? identifier) {
+  QuestionResult<dynamic>? _getResultByStepIdentifier(
+    StepIdentifier? identifier,
+  ) {
     return results.firstWhereOrNull(
       (element) => element.id == identifier,
     );
   }
 
   SurveyState _handleSave(
-      SaveSurvey event, PresentingSurveyState currentState) {
+    SaveSurvey event,
+    PresentingSurveyState currentState,
+  ) {
     _addResult(event.questionResult);
 
-    List<StepResult> stepResults =
+    // Re-adds all saved results of questions that don't have new answers
+    // and come after the current question, so that those saved answers aren't
+    // lost
+    _insertSavedResults(lastAnsweredQuestionId: event.questionResult!.id);
+
+    final List<StepResult> stepResults =
         results.map((e) => StepResult.fromQuestion(questionResult: e)).toList();
 
     final taskResult = SurveyResult(
@@ -208,10 +248,12 @@ class SurveyPresenter extends Bloc<SurveyEvent, SurveyState> {
   }
 
   SurveyState _handleClose(
-      CloseSurvey event, PresentingSurveyState currentState) {
+    CloseSurvey event,
+    PresentingSurveyState currentState,
+  ) {
     _addResult(event.questionResult);
 
-    List<StepResult> stepResults =
+    final List<StepResult> stepResults =
         results.map((e) => StepResult.fromQuestion(questionResult: e)).toList();
 
     final taskResult = SurveyResult(
@@ -233,7 +275,7 @@ class SurveyPresenter extends Bloc<SurveyEvent, SurveyState> {
 
   //Currently we are only handling one question per step
   SurveyState _handleSurveyFinished(PresentingSurveyState currentState) {
-    List<StepResult> stepResults =
+    final List<StepResult> stepResults =
         results.map((e) => StepResult.fromQuestion(questionResult: e)).toList();
     final taskResult = SurveyResult(
       id: taskNavigator.task.id,
@@ -252,15 +294,19 @@ class SurveyPresenter extends Bloc<SurveyEvent, SurveyState> {
     );
   }
 
-  void _addResult(QuestionResult? questionResult) {
+  void _addResult(
+    QuestionResult<dynamic>? questionResult,
+  ) {
     if (questionResult == null) {
       return;
     }
     results
-        .removeWhere((QuestionResult result) => result.id == questionResult.id);
-    results.add(
-      questionResult,
-    );
+      ..removeWhere(
+        (QuestionResult<dynamic> result) => result.id == questionResult.id,
+      )
+      ..add(
+        questionResult,
+      );
   }
 
   int get countSteps => taskNavigator.countSteps;
@@ -268,8 +314,10 @@ class SurveyPresenter extends Bloc<SurveyEvent, SurveyState> {
     return taskNavigator.currentStepIndex(step);
   }
 
-  void _resetChildQuestionState(QuestionResult<dynamic>? questionResult,
-      PresentingSurveyState currentState) {
+  void _resetChildQuestionState(
+    QuestionResult<dynamic>? questionResult,
+    PresentingSurveyState currentState,
+  ) {
     if (questionResult != null &&
         taskNavigator is NavigableTaskNavigator &&
         currentState.currentStep is QuestionStep) {
@@ -278,17 +326,22 @@ class SurveyPresenter extends Bloc<SurveyEvent, SurveyState> {
       final childId = currentStep.answerFormat.childQuestionId;
       if (childId != null) {
         final nextStepIdentifier = navigator.getNextStepIdentifierByRule(
-            currentStep.stepIdentifier, null, null);
+          currentStep.stepIdentifier,
+          null,
+          null,
+        );
 
         // If next step is not the child,
-        if (nextStepIdentifier?.id != childId) {
+        if (nextStepIdentifier?.id != childId.id) {
           // removes any saved result from the child question from the results stack
           results
               .removeWhere((whereResult) => whereResult.id?.id == childId.id);
           // removes child step from history
-          taskNavigator.history.removeWhere((whereStep) =>
-              whereStep is QuestionStep &&
-              whereStep.stepIdentifier.id == childId.id);
+          taskNavigator.history.removeWhere(
+            (whereStep) =>
+                whereStep is QuestionStep &&
+                whereStep.stepIdentifier.id == childId.id,
+          );
         }
       }
     }

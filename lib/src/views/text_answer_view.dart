@@ -32,9 +32,14 @@ class _TextAnswerViewState extends State<TextAnswerView> {
   void initState() {
     super.initState();
     _controller = TextEditingController();
-    _controller.text = widget.result?.result ?? '';
     _textAnswerFormat = widget.questionStep.answerFormat as TextAnswerFormat;
-    if (_textAnswerFormat.savedResult != null) {
+
+    // Uses local in memory result if it exists
+    if (widget.result?.result != null) {
+      _controller.text = widget.result?.result ?? '';
+    }
+    // else, uses saved result if it exists
+    else if (_textAnswerFormat.savedResult != null) {
       _controller.text = _textAnswerFormat.savedResult?.result ?? '';
     }
     _checkValidation(_controller.text);
@@ -67,7 +72,10 @@ class _TextAnswerViewState extends State<TextAnswerView> {
     return StepView(
       step: widget.questionStep,
       resultFunction: () {
-        if (!_changed && _textAnswerFormat.savedResult != null) {
+        // Uses saved result only if there is not a local result
+        if (!_changed &&
+            _textAnswerFormat.savedResult != null &&
+            widget.result == null) {
           return _textAnswerFormat.savedResult!;
         }
 

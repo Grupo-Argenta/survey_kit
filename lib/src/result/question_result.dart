@@ -11,4 +11,10 @@ abstract class QuestionResult<T> extends Result {
     required this.valueIdentifier,
     required this.result,
   }) : super(id: id, startDate: startDate, endDate: endDate);
+
+  @override
+  bool operator ==(o) => o is QuestionResult<T> && o.id == id;
+
+  @override
+  int get hashCode => id.hashCode;
 }

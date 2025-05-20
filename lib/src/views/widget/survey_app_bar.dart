@@ -18,15 +18,19 @@ class SurveyAppBar extends StatefulWidget {
 class _SurveyAppBarState extends State<SurveyAppBar> {
   @override
   AppBar build(BuildContext context) {
+    final appBarConfiguration = widget.appBarConfiguration;
+
     final _showProgress =
-        widget.appBarConfiguration.showProgress ?? context.read<bool>();
-    final _canGoBack = widget.appBarConfiguration.canBack ?? true;
+        appBarConfiguration.showProgress ?? context.read<bool>();
 
     final surveyController =
         widget.controller ?? context.read<SurveyController>();
+
     return AppBar(
       elevation: 0,
-      leading: _canGoBack
+      automaticallyImplyLeading: false,
+      leading: appBarConfiguration.leading != null &&
+              appBarConfiguration.canGoBackWithLeading == true
           ? BlocBuilder<SurveyPresenter, SurveyState>(
               builder: (context, state) {
                 if (state is PresentingSurveyState &&
@@ -44,7 +48,7 @@ class _SurveyAppBarState extends State<SurveyAppBar> {
                 }
               },
             )
-          : const SizedBox.shrink(),
+          : null,
       title: _showProgress ? const SurveyProgress() : const SizedBox.shrink(),
     );
   }

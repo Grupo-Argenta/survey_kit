@@ -96,11 +96,11 @@ class _StarAnswerViewState extends State<StarAnswerView> {
     _starAnswerFormat = widget.questionStep.answerFormat as StarAnswerFormat;
 
     final savedResult = _starAnswerFormat.savedResult;
-    if (savedResult != null && savedResult.result != null) {
-      rating = savedResult.result!.toDouble() / 2;
-    }
+
     if (widget.result != null && widget.result?.result != null) {
       this.rating = widget.result!.result!.toDouble() / 2;
+    } else if (savedResult != null && savedResult.result != null) {
+      rating = savedResult.result!.toDouble() / 2;
     }
 
     _startDate = DateTime.now();
@@ -116,7 +116,10 @@ class _StarAnswerViewState extends State<StarAnswerView> {
     return StepView(
       step: widget.questionStep,
       resultFunction: () {
-        if (!_changed && _starAnswerFormat.savedResult != null) {
+        // Uses saved result only if there is not a local result
+        if (!_changed &&
+            _starAnswerFormat.savedResult != null &&
+            widget.result == null) {
           return _starAnswerFormat.savedResult!;
         }
 

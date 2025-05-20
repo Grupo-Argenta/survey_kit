@@ -93,7 +93,10 @@ class _DoubleAnswerViewState extends State<DoubleAnswerView> {
     return StepView(
       step: widget.questionStep,
       resultFunction: () {
-        if (!_changed && _doubleAnswerFormat.savedResult != null) {
+        // Uses saved result only if there is not a local result
+        if (!_changed &&
+            _doubleAnswerFormat.savedResult != null &&
+            widget.result == null) {
           return _doubleAnswerFormat.savedResult!;
         }
 

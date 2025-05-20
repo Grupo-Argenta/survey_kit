@@ -18,8 +18,7 @@ class SurveyController {
   final bool Function(
     BuildContext context,
     QuestionResult Function() resultFunction,
-  )?
-  onNextStep;
+  )? onNextStep;
 
   /// Defines what should happen if the previus step is called
   ///
@@ -34,8 +33,7 @@ class SurveyController {
   final bool Function(
     BuildContext context,
     QuestionResult Function()? resultFunction,
-  )?
-  onStepBack;
+  )? onStepBack;
 
   /// Defines what should happen if the survey should be closed
   ///
@@ -50,8 +48,7 @@ class SurveyController {
   final bool Function(
     BuildContext context,
     QuestionResult Function()? resultFunction,
-  )?
-  onCloseSurvey;
+  )? onCloseSurvey;
 
   /// Defines what should happen if the survey should be saved (for after)
   ///
@@ -66,8 +63,7 @@ class SurveyController {
   final bool Function(
     BuildContext context,
     QuestionResult Function()? resultFunction,
-  )?
-  onSaveSurvey;
+  )? onSaveSurvey;
 
   SurveyController({
     this.onNextStep,

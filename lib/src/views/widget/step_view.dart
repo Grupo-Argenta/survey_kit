@@ -17,7 +17,7 @@ class StepView extends StatelessWidget {
   final surveystep.Step step;
   final Widget title;
   final Widget child;
-  final QuestionResult Function() resultFunction;
+  final QuestionResult<dynamic> Function() resultFunction;
   final bool isValid;
   final SurveyController? controller;
 
@@ -45,58 +45,92 @@ class StepView extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 32),
-                      child: FilledButton(
-                        onPressed:
-                            () => surveyController.saveSurvey(
-                              context: context,
-                              resultFunction: resultFunction,
-                            ),
-                        style: const ButtonStyle(
-                          backgroundColor: WidgetStatePropertyAll(
-                            Color(0xFFDADADA),
-                          ),
-                        ),
-                        child: Text(
-                          context
-                                  .read<
-                                    Map<String, String>?
-                                  >()?['finish_later'] ??
-                              step.buttonText ??
-                              'Finish Later',
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 32),
-                      child: OutlinedButton(
-                        onPressed:
-                            isValid || step.isOptional
-                                ? () => surveyController.nextStep(
-                                  context,
-                                  resultFunction,
-                                )
-                                : null,
-                        child: Text(
-                          context.read<Map<String, String>?>()?['next'] ??
-                              step.buttonText ??
-                              'Next',
-                          style: TextStyle(
-                            color:
-                                isValid
-                                    ? Theme.of(context).primaryColor
-                                    : Colors.grey,
-                          ),
-                        ),
-                      ),
-                    ),
+                    if (step.canGoBack)
+                      _goBackButton(surveyController, context),
+                    _finishLaterButton(surveyController, context),
+                    _nextButton(surveyController, context),
                   ],
                 ),
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Padding _nextButton(SurveyController surveyController, BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 32),
+      child: OutlinedButton(
+        onPressed: isValid || step.isOptional
+            ? () => surveyController.nextStep(
+                  context,
+                  resultFunction,
+                )
+            : null,
+        style: step.surveyStepConfiguration?.nextQuestionButtonStyle,
+        child: Text(
+          context.read<Map<String, String>?>()?['next'] ??
+              step.buttonText ??
+              'Next',
+          style: TextStyle(
+            color: isValid ? Theme.of(context).primaryColor : Colors.grey,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Padding _finishLaterButton(
+    SurveyController surveyController,
+    BuildContext context,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 32),
+      child: FilledButton(
+        onPressed: () => surveyController.saveSurvey(
+          context: context,
+          resultFunction: resultFunction,
+        ),
+        style: step.surveyStepConfiguration?.finishLaterButtonStyle ??
+            const ButtonStyle(
+              backgroundColor: WidgetStatePropertyAll(
+                Color(0xFF00C3A4),
+              ),
+            ),
+        child: Text(
+          context.read<Map<String, String>?>()?['finish_later'] ??
+              step.buttonText ??
+              'Finish Later',
+          style: const TextStyle(color: Colors.white),
+        ),
+      ),
+    );
+  }
+
+  Padding _goBackButton(
+    SurveyController surveyController,
+    BuildContext context,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 32),
+      child: FilledButton(
+        onPressed: () => surveyController.stepBack(
+          context: context,
+          resultFunction: resultFunction,
+        ),
+        style: step.surveyStepConfiguration?.goBackButtonStyle ??
+            const ButtonStyle(
+              backgroundColor: WidgetStatePropertyAll(
+                Color(0xFFDADADA),
+              ),
+            ),
+        child: Text(
+          context.read<Map<String, String>?>()?['go_back'] ??
+              step.buttonText ??
+              'Go Back',
+          style: const TextStyle(color: Colors.white),
         ),
       ),
     );

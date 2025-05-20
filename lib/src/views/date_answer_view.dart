@@ -8,17 +8,17 @@ import 'package:survey_kit/src/steps/predefined_steps/question_step.dart';
 import 'package:survey_kit/src/views/widget/step_view.dart';
 
 class DateAnswerView extends StatefulWidget {
+  const DateAnswerView({
+    super.key,
+    required this.questionStep,
+    required this.result,
+  });
+
   /// [QuestionStep] which includes the [DateAnswerFormat]
   final QuestionStep questionStep;
 
   /// [DateQuestionResult] which boxes the result
   final DateQuestionResult? result;
-
-  const DateAnswerView({
-    Key? key,
-    required this.questionStep,
-    required this.result,
-  }) : super(key: key);
 
   @override
   _DateAnswerViewState createState() => _DateAnswerViewState();
@@ -52,7 +52,10 @@ class _DateAnswerViewState extends State<DateAnswerView> {
     return StepView(
       step: widget.questionStep,
       resultFunction: () {
-        if (!_changed && _dateAnswerFormat.savedResult != null) {
+        // Uses saved result only if there is not a local result
+        if (!_changed &&
+            _dateAnswerFormat.savedResult != null &&
+            widget.result == null) {
           return _dateAnswerFormat.savedResult!;
         }
 

@@ -35,8 +35,7 @@ class _IntegerAnswerViewState extends State<IntegerAnswerView> {
     _integerAnswerFormat =
         widget.questionStep.answerFormat as IntegerAnswerFormat;
     _controller = TextEditingController();
-    _controller.text =
-        widget.result?.result?.toString() ??
+    _controller.text = widget.result?.result?.toString() ??
         _integerAnswerFormat.savedResult?.result?.toString() ??
         '';
     _checkValidation(_controller.text);
@@ -66,35 +65,36 @@ class _IntegerAnswerViewState extends State<IntegerAnswerView> {
     return StepView(
       step: widget.questionStep,
       resultFunction: () {
-        if (!_changed && _integerAnswerFormat.savedResult != null) {
+        // Uses saved result only if there is not a local result
+        if (!_changed &&
+            _integerAnswerFormat.savedResult != null &&
+            widget.result == null) {
           return _integerAnswerFormat.savedResult!;
         }
+
         final sanitized = _controller.text.replaceAll(',', '.');
         return IntegerQuestionResult(
           id: widget.questionStep.stepIdentifier,
           startDate: _startDate,
           endDate: DateTime.now(),
           valueIdentifier: _controller.text,
-          result:
-              double.tryParse(sanitized) ??
+          result: double.tryParse(sanitized) ??
               _integerAnswerFormat.defaultValue ??
               null,
         );
       },
       isValid: _isValid || widget.questionStep.isOptional,
-      title:
-          widget.questionStep.title.isNotEmpty
-              ? Text(
-                widget.questionStep.title,
-                style:
-                    widget.questionStep.title.length > 270
-                        ? Theme.of(
-                          context,
-                        ).textTheme.displayMedium!.copyWith(fontSize: 21)
-                        : Theme.of(context).textTheme.displayMedium,
-                textAlign: TextAlign.center,
-              )
-              : widget.questionStep.content,
+      title: widget.questionStep.title.isNotEmpty
+          ? Text(
+              widget.questionStep.title,
+              style: widget.questionStep.title.length > 270
+                  ? Theme.of(
+                      context,
+                    ).textTheme.displayMedium!.copyWith(fontSize: 21)
+                  : Theme.of(context).textTheme.displayMedium,
+              textAlign: TextAlign.center,
+            )
+          : widget.questionStep.content,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 32.0),
         child: Container(

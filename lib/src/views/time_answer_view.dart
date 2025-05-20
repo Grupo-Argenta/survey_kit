@@ -9,14 +9,13 @@ import 'package:survey_kit/src/views/widget/time_picker_widget.dart'
     as surveywidget;
 
 class TimeAnswerView extends StatefulWidget {
-  final QuestionStep questionStep;
-  final TimeQuestionResult? result;
-
   const TimeAnswerView({
-    Key? key,
+    super.key,
     required this.questionStep,
     required this.result,
-  }) : super(key: key);
+  });
+  final QuestionStep questionStep;
+  final TimeQuestionResult? result;
 
   @override
   _TimeAnswerViewState createState() => _TimeAnswerViewState();
@@ -32,9 +31,10 @@ class _TimeAnswerViewState extends State<TimeAnswerView> {
   void initState() {
     super.initState();
     _timeAnswerFormat = widget.questionStep.answerFormat as TimeAnswerFormat;
+
     _result = widget.result?.result ??
-        _timeAnswerFormat.defaultValue ??
         _timeAnswerFormat.savedResult?.result ??
+        _timeAnswerFormat.defaultValue ??
         TimeOfDay.fromDateTime(
           DateTime.now(),
         );
@@ -45,7 +45,10 @@ class _TimeAnswerViewState extends State<TimeAnswerView> {
     return StepView(
       step: widget.questionStep,
       resultFunction: () {
-        if (!_changed && _timeAnswerFormat.savedResult != null) {
+        // Uses saved result only if there is not a local result
+        if (!_changed &&
+            _timeAnswerFormat.savedResult != null &&
+            widget.result == null) {
           return _timeAnswerFormat.savedResult!;
         }
 

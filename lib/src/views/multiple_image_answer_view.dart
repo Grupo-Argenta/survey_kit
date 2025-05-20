@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
@@ -34,11 +33,41 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
   List<String> filePaths = [];
 
   @override
+  void initState() {
+    super.initState();
+    _retrieveLostData();
+    _multipleImageAnswerFormat =
+        widget.questionStep.answerFormat as MultipleImageAnswerFormat;
+
+    final savedResult = _multipleImageAnswerFormat.savedResult;
+
+    // Uses locally saved if it exists
+    if (widget.result != null && widget.result!.result != null) {
+      filePaths.addAll(widget.result!.result!);
+      setState(() {
+        _isValid = true;
+      });
+    }
+    // Else, uses answerFormat saved result
+    else if (savedResult != null && savedResult.result != null) {
+      filePaths.addAll(savedResult.result!);
+      setState(() {
+        _isValid = true;
+      });
+    }
+
+    _startDate = DateTime.now();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return StepView(
       step: widget.questionStep,
       resultFunction: () {
-        if (!_changed && _multipleImageAnswerFormat.savedResult != null) {
+        // Uses saved result only if there is not a local result
+        if (!_changed &&
+            _multipleImageAnswerFormat.savedResult != null &&
+            widget.result == null) {
           return _multipleImageAnswerFormat.savedResult!;
         }
         return MultipleImageQuestionResult(
@@ -146,24 +175,6 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
         ),
       ),
     );
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _retrieveLostData();
-    _multipleImageAnswerFormat =
-        widget.questionStep.answerFormat as MultipleImageAnswerFormat;
-
-    final savedResult = _multipleImageAnswerFormat.savedResult;
-    if (savedResult != null && savedResult.result != null) {
-      filePaths = savedResult.result!;
-      setState(() {
-        _isValid = true;
-      });
-    }
-
-    _startDate = DateTime.now();
   }
 
   Future<void> _openCamera(BuildContext context) async {
@@ -521,23 +532,14 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
             ),
             TextButton(
               onPressed: () {
-                try {
-                  final File file = File(filePath);
-
-                  if (file.existsSync()) {
-                    file.delete();
-                  }
-                } catch (e) {
-                  //
-                } finally {
-                  setState(() {
-                    filePaths.remove(filePath);
-                    _isValid = filePaths.isNotEmpty;
-                  });
-                  Navigator.of(dialogContext).pop();
-                  if (popAll) {
-                    Navigator.of(context).pop();
-                  }
+                setState(() {
+                  _changed = true;
+                  filePaths.remove(filePath);
+                  _isValid = filePaths.isNotEmpty;
+                });
+                Navigator.of(dialogContext).pop();
+                if (popAll) {
+                  Navigator.of(context).pop();
                 }
               },
               child: const Text('Deletar', style: TextStyle(color: Colors.red)),

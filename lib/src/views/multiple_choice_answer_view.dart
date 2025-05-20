@@ -45,7 +45,10 @@ class _MultipleChoiceAnswerView extends State<MultipleChoiceAnswerView> {
     return StepView(
       step: widget.questionStep,
       resultFunction: () {
-        if (!_changed && _multipleChoiceAnswer.savedResult != null) {
+        // Uses saved result only if there is not a local result
+        if (!_changed &&
+            _multipleChoiceAnswer.savedResult != null &&
+            widget.result == null) {
           return _multipleChoiceAnswer.savedResult!;
         } else {
           final newResult = MultipleChoiceQuestionResult(

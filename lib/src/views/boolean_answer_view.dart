@@ -6,17 +6,17 @@ import 'package:survey_kit/src/views/widget/selection_list_tile.dart';
 import 'package:survey_kit/src/views/widget/step_view.dart';
 
 class BooleanAnswerView extends StatefulWidget {
+  const BooleanAnswerView({
+    super.key,
+    required this.questionStep,
+    required this.result,
+  });
+
   final QuestionStep questionStep;
   final BooleanQuestionResult? result;
 
-  const BooleanAnswerView({
-    Key? key,
-    required this.questionStep,
-    required this.result,
-  }) : super(key: key);
-
   @override
-  _BooleanAnswerViewState createState() => _BooleanAnswerViewState();
+  State<BooleanAnswerView> createState() => _BooleanAnswerViewState();
 }
 
 class _BooleanAnswerViewState extends State<BooleanAnswerView> {
@@ -40,7 +40,10 @@ class _BooleanAnswerViewState extends State<BooleanAnswerView> {
     return StepView(
       step: widget.questionStep,
       resultFunction: () {
-        if (!_changed && _answerFormat.savedResult != null) {
+        // Uses saved result only if there is not a local result
+        if (!_changed &&
+            _answerFormat.savedResult != null &&
+            widget.result == null) {
           return _answerFormat.savedResult!;
         }
 
@@ -73,7 +76,7 @@ class _BooleanAnswerViewState extends State<BooleanAnswerView> {
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.only(bottom: 32.0),
+            padding: const EdgeInsets.only(bottom: 32),
             child: Text(
               widget.questionStep.text,
               style: Theme.of(context).textTheme.bodyMedium,
@@ -82,7 +85,7 @@ class _BooleanAnswerViewState extends State<BooleanAnswerView> {
           ),
           Column(
             children: [
-              Divider(
+              const Divider(
                 color: Colors.grey,
               ),
               SelectionListTile(

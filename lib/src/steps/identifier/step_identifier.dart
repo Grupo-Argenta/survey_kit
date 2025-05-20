@@ -11,6 +11,6 @@ class StepIdentifier extends Identifier {
       _$StepIdentifierFromJson(json);
   Map<String, dynamic> toJson() => _$StepIdentifierToJson(this);
 
-  bool operator ==(o) => o is StepIdentifier && id == o.id;
+  // bool operator ==(o) => o is StepIdentifier && id == o.id;
   int get hashCode => id.hashCode;
 }
