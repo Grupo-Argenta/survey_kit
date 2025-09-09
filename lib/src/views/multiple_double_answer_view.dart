@@ -39,25 +39,31 @@ class _MultipleDoubleAnswerViewState extends State<MultipleDoubleAnswerView> {
       return TextEditingController();
     }).toList();
 
-    for (int i = 0; i <= _controller.length; i++) {
+    for (int i = 0; i < _controller.length; i++) {
       final controller = _controller.elementAt(i);
-
       final val = widget.result?.result?.elementAtOrNull(i) ??
           _multipleDoubleAnswer.savedResult?.result?.elementAtOrNull(i);
 
       controller.text = val != null ? val.toString() : '';
-
-      _checkValidation(controller.text);
     }
 
     _insertedValues = List.generate(
         _multipleDoubleAnswer.hints.length,
         (index) => MultiDouble(
-              text: '',
+              text: _multipleDoubleAnswer.hints[index],
               value: 0.0,
             ));
 
     _startDate = DateTime.now();
+
+    _validateCurrentState();
+  }
+
+  @override
+  void didUpdateWidget(MultipleDoubleAnswerView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Revalida o estado quando o widget for atualizado (ex: ao voltar de "Finalizar depois")
+    _validateCurrentState();
   }
 
   @override
@@ -68,11 +74,25 @@ class _MultipleDoubleAnswerViewState extends State<MultipleDoubleAnswerView> {
     super.dispose();
   }
 
-  void _checkValidation(String text) {
-    setState(() {
-      _isValid =
+  void _validateCurrentState() {
+    bool allFieldsValid = true;
+
+    for (final controller in _controller) {
+      final text = controller.text;
+      final isValid =
           text.isNotEmpty && double.tryParse(text.replaceAll(',', '.')) != null;
-    });
+
+      if (!isValid) {
+        allFieldsValid = false;
+        break;
+      }
+    }
+
+    if (_isValid != allFieldsValid) {
+      setState(() {
+        _isValid = allFieldsValid;
+      });
+    }
   }
 
   @override
@@ -143,16 +163,20 @@ class _MultipleDoubleAnswerViewState extends State<MultipleDoubleAnswerView> {
                     ),
                     controller: _controller[md.key],
                     onChanged: (String value) {
-                      value = _formatter.getUnformattedValue().toString();
-
-                      _checkValidation(value);
+                      final unformattedValue =
+                          _formatter.getUnformattedValue().toString();
 
                       _insertedValues[md.key] = MultiDouble(
                         text: md.value,
-                        value: double.parse(value),
+                        value: double.tryParse(
+                                unformattedValue.replaceAll(',', '.')) ??
+                            0.0,
                       );
 
-                      if (_isValid) _changed = true;
+                      setState(() {
+                        _changed = true;
+                      });
+                      _validateCurrentState();
                     },
                     keyboardType: TextInputType.number,
                     textAlign: TextAlign.center,

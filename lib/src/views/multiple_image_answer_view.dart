@@ -44,19 +44,31 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
     // Uses locally saved if it exists
     if (widget.result != null && widget.result!.result != null) {
       filePaths.addAll(widget.result!.result!);
-      setState(() {
-        _isValid = true;
-      });
+      _validateCurrentState();
     }
     // Else, uses answerFormat saved result
     else if (savedResult != null && savedResult.result != null) {
       filePaths.addAll(savedResult.result!);
-      setState(() {
-        _isValid = true;
-      });
+      _validateCurrentState();
     }
 
     _startDate = DateTime.now();
+  }
+
+  @override
+  void didUpdateWidget(MultipleImageAnswerView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Revalida o estado quando o widget for atualizado (ex: ao voltar de "Finalizar depois")
+    _validateCurrentState();
+  }
+
+  void _validateCurrentState() {
+    final isValid = filePaths.isNotEmpty;
+    if (_isValid != isValid) {
+      setState(() {
+        _isValid = isValid;
+      });
+    }
   }
 
   @override
@@ -214,9 +226,9 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
                         if (result == true) {
                           setState(() {
                             filePaths.add(single.file!.path);
-                            _isValid = true;
                             _changed = true;
                           });
+                          _validateCurrentState();
 
                           if (context.mounted) {
                             Navigator.of(context).pop();
@@ -293,20 +305,6 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
 
       final picture = await _picker.pickImage(source: ImageSource.gallery);
 
-      // await picture?.readAsBytes().then((value) {
-      //   setState(() {
-      //     filePaths.add(picture.path);
-      //
-      //     if (filePaths.isNotEmpty) {
-      //       _isValid = true;
-      //       _changed = true;
-      //     }
-      //   });
-      //
-      //   Navigator.of(context).pop();
-      // });
-      // await crashlytics.log('Gallery image picker successfully opened');
-
       if (picture != null) {
         final File imageFile = File(picture.path);
 
@@ -321,18 +319,15 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
 
         setState(() {
           filePaths.add(renamedImage.path);
-
-          if (filePaths.isNotEmpty) {
-            _isValid = true;
-            _changed = true;
-          }
+          _changed = true;
         });
+        _validateCurrentState();
 
         if (mounted) {
           Navigator.of(context).pop();
         }
         await crashlytics.log(
-          'Gallery image picker successfully opened. Image: $renamedImage.path',
+          'Gallery image picker successfully opened. Image: ${renamedImage.path}',
         );
       }
     } catch (err, stacktrace) {
@@ -463,6 +458,7 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
         if (response.file != null && response.file?.path != null) {
           filePaths.add(response.file!.path);
         }
+        _validateCurrentState();
 
         debugPrint('retrieved path: $filePaths');
       });
@@ -535,8 +531,8 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
                 setState(() {
                   _changed = true;
                   filePaths.remove(filePath);
-                  _isValid = filePaths.isNotEmpty;
                 });
+                _validateCurrentState();
                 Navigator.of(dialogContext).pop();
                 if (popAll) {
                   Navigator.of(context).pop();
