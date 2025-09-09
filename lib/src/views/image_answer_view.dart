@@ -43,22 +43,35 @@ class _ImageAnswerViewState extends State<ImageAnswerView> {
     final savedResult = _imageAnswerFormat.savedResult;
     if (widget.result?.result != null) {
       filePath = widget.result!.result!;
-      setState(() {
-        _isValid = true;
-      });
     } else if (savedResult != null && savedResult.result != null) {
       filePath = savedResult.result!;
-      setState(() {
-        _isValid = true;
-      });
     }
 
     _startDate = DateTime.now();
+
+    _validateCurrentState();
+  }
+
+  @override
+  void didUpdateWidget(ImageAnswerView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Revalida o estado quando o widget for atualizado (ex: ao voltar de "Finalizar depois")
+    _validateCurrentState();
   }
 
   @override
   void dispose() {
     super.dispose();
+  }
+
+  void _validateCurrentState() {
+    final isValid = filePath.isNotEmpty;
+
+    if (_isValid != isValid) {
+      setState(() {
+        _isValid = isValid;
+      });
+    }
   }
 
   Future<void> _retrieveLostData() async {
@@ -74,7 +87,7 @@ class _ImageAnswerViewState extends State<ImageAnswerView> {
         if (response.file != null && response.file?.path != null) {
           filePath = response.file!.path;
         }
-
+        _validateCurrentState();
         debugPrint('retrieved path: $filePath');
       });
     } else {
@@ -251,23 +264,6 @@ class _ImageAnswerViewState extends State<ImageAnswerView> {
     try {
       await crashlytics.log('Opening camera image picker');
 
-      // Original Camera implementation
-      //final picture = await _picker.pickImage(
-      //  source: ImageSource.gallery,
-      //);
-      //
-      //await picture?.readAsBytes().then((value) {
-      //  setState(() {
-      //    filePath = picture.path;
-      //
-      //    if (filePath.isNotEmpty) {
-      //      _isValid = true;
-      //    }
-      //  });
-      //
-      //  Navigator.of(context).pop();
-      //});
-
       var control = false;
       // New Camera implementation using cameraawesome
       if (context.mounted) {
@@ -297,9 +293,9 @@ class _ImageAnswerViewState extends State<ImageAnswerView> {
                         if (result == true) {
                           setState(() {
                             filePath = single.file!.path;
-                            _isValid = true;
                             _changed = true;
                           });
+                          _validateCurrentState();
 
                           if (context.mounted) {
                             Navigator.of(context).pop();
@@ -431,12 +427,9 @@ class _ImageAnswerViewState extends State<ImageAnswerView> {
 
         setState(() {
           filePath = renamedImage.path;
-
-          if (filePath.isNotEmpty) {
-            _isValid = true;
-            _changed = true;
-          }
+          _changed = true;
         });
+        _validateCurrentState();
 
         if (mounted) {
           Navigator.of(context).pop();
@@ -509,8 +502,8 @@ class _ImageAnswerViewState extends State<ImageAnswerView> {
                 setState(() {
                   _changed = true;
                   filePath = '';
-                  _isValid = false;
                 });
+                _validateCurrentState();
                 Navigator.of(dialogContext).pop();
                 if (popAll) {
                   Navigator.of(context).pop();

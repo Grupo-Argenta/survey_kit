@@ -44,12 +44,20 @@ class _DoubleAnswerViewState extends State<DoubleAnswerView> {
     _controller.text = widget.result?.valueIdentifier ??
         _doubleAnswerFormat.savedResult?.result?.toString() ??
         '';
-    _checkValidation(_controller.text, _controller.text);
     _startDate = DateTime.now();
+
+    _validateCurrentState();
 
     Future.delayed(Duration(seconds: 0), () {
       inputFocus.requestFocus();
     });
+  }
+
+  @override
+  void didUpdateWidget(DoubleAnswerView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Revalida o estado quando o widget for atualizado (ex: ao voltar de "Finalizar depois")
+    _validateCurrentState();
   }
 
   @override
@@ -58,8 +66,10 @@ class _DoubleAnswerViewState extends State<DoubleAnswerView> {
     super.dispose();
   }
 
-  void _checkValidation(String text, String value) {
+  void _validateCurrentState() {
+    final text = _controller.text;
     double parsedValue = 0.0;
+
     if (double.tryParse(text
             .replaceAll('.', '')
             .replaceAll(',', '.')
@@ -74,18 +84,22 @@ class _DoubleAnswerViewState extends State<DoubleAnswerView> {
           .replaceAll('\$', '')
           .replaceAll(' ', ''))!;
     }
-    setState(() {
-      _isValid = value.isNotEmpty &&
-          text.isNotEmpty &&
-          double.tryParse(text
-                  .replaceAll('.', '')
-                  .replaceAll(',', '.')
-                  .replaceAll('R', '')
-                  .replaceAll('\$', '')
-                  .replaceAll(' ', '')) !=
-              null &&
-          parsedValue > 0;
-    });
+
+    final isValid = text.isNotEmpty &&
+        double.tryParse(text
+                .replaceAll('.', '')
+                .replaceAll(',', '.')
+                .replaceAll('R', '')
+                .replaceAll('\$', '')
+                .replaceAll(' ', '')) !=
+            null &&
+        parsedValue > 0;
+
+    if (_isValid != isValid) {
+      setState(() {
+        _isValid = isValid;
+      });
+    }
   }
 
   @override
@@ -143,8 +157,7 @@ class _DoubleAnswerViewState extends State<DoubleAnswerView> {
               setState(() {
                 _changed = true;
               });
-              _checkValidation(
-                  _formatter.getUnformattedValue().toString(), value);
+              _validateCurrentState();
             },
             keyboardType: TextInputType.number,
             textAlign: TextAlign.center,

@@ -46,7 +46,6 @@ class _HandDrawAnswerViewState extends State<HandDrawAnswerView> {
     // Uses locally saved result if it exists
     if (widget.result != null && widget.result!.result != null) {
       _nameController.text = widget.result!.result!.name;
-
       _checkIfFileExists(widget.result!.result!.signatureImageUrl);
     }
     // Else, uses saved result if it exists
@@ -55,13 +54,20 @@ class _HandDrawAnswerViewState extends State<HandDrawAnswerView> {
       _checkIfFileExists(savedResult.result!.signatureImageUrl);
     }
 
-    _checkValidation();
-
     _startDate = DateTime.now();
+
+    _validateCurrentState();
 
     Future.delayed(Duration.zero, () {
       inputFocus.requestFocus();
     });
+  }
+
+  @override
+  void didUpdateWidget(HandDrawAnswerView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Revalida o estado quando o widget for atualizado (ex: ao voltar de "Finalizar depois")
+    _validateCurrentState();
   }
 
   void _checkIfFileExists(String path) {
@@ -81,24 +87,26 @@ class _HandDrawAnswerViewState extends State<HandDrawAnswerView> {
     super.dispose();
   }
 
-  void _checkValidation() {
+  void _validateCurrentState() {
     final RegExp nameRegex =
         RegExp(r"^[A-Za-zÀ-ÖØ-öø-ÿ]{2,}(?:[-' ][A-Za-zÀ-ÖØ-öø-ÿ]+)*$");
     final bool nameHasMatch = nameRegex.hasMatch(_nameController.text);
-    bool signFileExists = false;
 
+    bool signFileExists = false;
     final file = _resultFile;
-    if (file != null) {
-      if (file.existsSync()) {
-        signFileExists = true;
-      }
+    if (file != null && file.existsSync()) {
+      signFileExists = true;
     }
 
-    setState(() {
-      _changed = true;
-      _canSign = nameHasMatch;
-      _isValid = nameHasMatch && signFileExists;
-    });
+    final isValid = nameHasMatch && signFileExists;
+    final canSign = nameHasMatch;
+
+    if (_isValid != isValid || _canSign != canSign) {
+      setState(() {
+        _isValid = isValid;
+        _canSign = canSign;
+      });
+    }
   }
 
   @override
@@ -153,7 +161,7 @@ class _HandDrawAnswerViewState extends State<HandDrawAnswerView> {
                 controller: _nameController,
                 textAlign: TextAlign.center,
                 onChanged: (String text) {
-                  _checkValidation();
+                  _validateCurrentState();
                 },
               ),
               const SizedBox(
@@ -330,9 +338,9 @@ class _HandDrawAnswerViewState extends State<HandDrawAnswerView> {
 
         setState(() {
           _resultFile = file;
+          _changed = true;
         });
-
-        _checkValidation();
+        _validateCurrentState();
 
         if (_isValid) {
           if (context.mounted) {
@@ -418,8 +426,8 @@ class _HandDrawAnswerViewState extends State<HandDrawAnswerView> {
                 setState(() {
                   _changed = true;
                   _resultFile = null;
-                  _isValid = false;
                 });
+                _validateCurrentState();
                 Navigator.of(dialogContext).pop();
                 if (popAll) {
                   Navigator.of(context).pop();
