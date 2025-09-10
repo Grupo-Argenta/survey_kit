@@ -35,9 +35,9 @@ class _ImageAnswerViewState extends State<ImageAnswerView> {
   String filePath = '';
 
   @override
-  void initState() {
+  void initState() async {
     super.initState();
-    _retrieveLostData();
+    await _retrieveLostData();
     _imageAnswerFormat = widget.questionStep.answerFormat as ImageAnswerFormat;
 
     final savedResult = _imageAnswerFormat.savedResult;
@@ -65,6 +65,7 @@ class _ImageAnswerViewState extends State<ImageAnswerView> {
   }
 
   void _validateCurrentState() {
+    print('validate state start');
     final isValid = filePath.isNotEmpty;
 
     if (_isValid != isValid) {
@@ -72,9 +73,12 @@ class _ImageAnswerViewState extends State<ImageAnswerView> {
         _isValid = isValid;
       });
     }
+    print('validate state end, result:');
+    print(_isValid);
   }
 
   Future<void> _retrieveLostData() async {
+    print('retrieve lost data start');
     final response = await _picker.retrieveLostData();
 
     if (response.isEmpty) {
@@ -93,6 +97,7 @@ class _ImageAnswerViewState extends State<ImageAnswerView> {
     } else {
       debugPrint(response.exception!.code);
     }
+    print('retrieve lost data end');
   }
 
   @override
