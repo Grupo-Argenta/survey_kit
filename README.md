@@ -47,10 +47,16 @@ This is an early version and work in progress. Do not hesitate to give feedback,
 # 📃 Atenção Rodar Local com Simplifica
 Caso queira executar o surkey_Kit local lembre de comentar 
 Deve estar assim:
-https://storage.googleapis.com/sim-app-public-8599601-qa/1757591981586.png
+| | | | | | 
+| :---: | :---: | :---: | :---: | :---: |
+| <img src="https://storage.googleapis.com/sim-app-public-8599601-qa/1757591981586.png?raw=true" width="200"> |
+
 
 Deixar assim:
-https://storage.googleapis.com/sim-app-public-8599601-qa/1757592052475.png
+
+| | | | | | 
+| :---: | :---: | :---: | :---: | :---: |
+| <img src="https://storage.googleapis.com/sim-app-public-8599601-qa/1757592052475.png?raw=true" width="200"> |
 
 Com isso consegue debugar local.
 
