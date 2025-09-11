@@ -414,3 +414,15 @@ Open a PR if you want to make changes to SurveyKit.
 
 # 📃 License
 SurveyKit is released under an MIT license. See [License](LICENSE) for more information.
+
+
+
+# 📃 Atenção
+Caso queira executar o surkey_Kit local lembre de comentar 
+Deve estar assim:
+https://storage.googleapis.com/sim-app-public-8599601-qa/1757591981586.png
+
+Deixar assim:
+https://storage.googleapis.com/sim-app-public-8599601-qa/1757592052475.png
+
+Com isso consegue debugar local.
