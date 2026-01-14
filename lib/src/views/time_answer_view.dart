@@ -1,6 +1,6 @@
+import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:survey_kit/src/answer_format/time_answer_formart.dart';
 import 'package:survey_kit/src/result/question/time_question_result.dart';
 import 'package:survey_kit/src/steps/predefined_steps/question_step.dart';
@@ -83,10 +83,7 @@ class _TimeAnswerViewState extends State<TimeAnswerView> {
               textAlign: TextAlign.center,
             ),
           ),
-          PlatformWidget(
-            material: (_, __) => _androidTimePicker(),
-            cupertino: (context, platform) => _iosTimePicker(),
-          ),
+          Platform.isIOS ? _iosTimePicker() : _androidTimePicker(),
         ],
       ),
     );
