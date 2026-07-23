@@ -343,7 +343,7 @@ class _ImageAnswerViewState extends State<ImageAnswerView> {
                 crashlytics.recordError(
                   err,
                   stack,
-                  reason: 'captureState$ stream error (image_answer_view)',
+                  reason: 'captureState\$ stream error (image_answer_view)',
                 );
               });
 

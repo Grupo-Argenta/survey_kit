@@ -281,7 +281,7 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
                 crashlytics.recordError(
                   err,
                   stack,
-                  reason: 'captureState$ stream error (multiple_image_answer_view)',
+                  reason: 'captureState\$ stream error (multiple_image_answer_view)',
                 );
               });
 
