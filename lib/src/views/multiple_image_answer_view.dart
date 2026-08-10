@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
@@ -31,6 +33,7 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
   bool _isValid = false;
   bool _changed = false;
   List<String> filePaths = [];
+  StreamSubscription<dynamic>? _cameraSubscription;
 
   @override
   void initState() {
@@ -60,6 +63,12 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
     super.didUpdateWidget(oldWidget);
     // Revalida o estado quando o widget for atualizado (ex: ao voltar de "Finalizar depois")
     _validateCurrentState();
+  }
+
+  @override
+  void dispose() {
+    _cameraSubscription?.cancel();
+    super.dispose();
   }
 
   void _validateCurrentState() {
@@ -195,18 +204,37 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
     await crashlytics.setCustomKey('img_src', 'CAMERA');
 
     try {
-      await crashlytics.log('Opening camera image picker');
+      debugPrint('[CRASH_CAMERA] (multiple) iniciando verificação de permissão');
+
+      final permissionStatus = await Permission.camera.status;
+      debugPrint('[CRASH_CAMERA] (multiple) permissão atual = $permissionStatus');
+
+      if (permissionStatus.isDenied) {
+        final requested = await Permission.camera.request();
+        debugPrint('[CRASH_CAMERA] (multiple) permissão solicitada, resultado = $requested');
+        if (!requested.isGranted) {
+          debugPrint('[CRASH_CAMERA] (multiple) permissão negada, abortando');
+          return;
+        }
+      } else if (permissionStatus.isPermanentlyDenied) {
+        debugPrint('[CRASH_CAMERA] (multiple) permissão permanentemente negada, abortando');
+        return;
+      }
+
+      debugPrint('[CRASH_CAMERA] (multiple) permissão OK, preparando showDialog');
 
       var control = false;
       // New Camera implementation using cameraawesome
       if (context.mounted) {
+        debugPrint('[CRASH_CAMERA] (multiple) context.mounted = true, abrindo câmera');
         await showDialog<void>(
           context: context,
           useRootNavigator: false,
           builder: (BuildContext contextDialog) => CameraAwesomeBuilder.custom(
             enablePhysicalButton: true,
             builder: (state, preview) {
-              state.captureState$.listen((event) {
+              _cameraSubscription?.cancel();
+              _cameraSubscription = state.captureState$.listen((event) {
                 if (event?.status == MediaCaptureStatus.capturing) {
                   control = false;
                 }
@@ -230,13 +258,17 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
                           });
                           _validateCurrentState();
 
-                          if (context.mounted) {
-                            Navigator.of(context).pop();
-                            Navigator.of(context).pop();
+                          if (!file.existsSync()) {
+                            await crashlytics.recordError(
+                              Exception('Foto capturada não encontrada no disco'),
+                              StackTrace.current,
+                              reason: 'Camera image file missing after capture',
+                              information: ['path: ${single.file!.path}'],
+                            );
                           }
 
-                          if (!file.existsSync()) {
-                            throw Exception('Erro ao bater foto');
+                          if (contextDialog.mounted) {
+                            Navigator.of(contextDialog).pop();
                           }
                         } else {
                           control = true;
@@ -245,6 +277,12 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
                     },
                   );
                 }
+              }, onError: (Object err, StackTrace stack) {
+                crashlytics.recordError(
+                  err,
+                  stack,
+                  reason: 'captureState\$ stream error (multiple_image_answer_view)',
+                );
               });
 
               return AwesomeCameraLayout(
@@ -268,9 +306,7 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
 
                 final filePath = '${newDir.path}/${const Uuid().v4()}.jpg';
 
-                await crashlytics.log(
-                  'Camera image picker successfully opened. Image: $filePath',
-                );
+                debugPrint('[CRASH_CAMERA] (multiple) câmera inicializada com sucesso. Caminho: $filePath');
 
                 return SingleCaptureRequest(filePath, sensors.first);
               },
@@ -285,8 +321,7 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
       }
     } catch (err, stacktrace) {
       final status = await Permission.camera.status;
-      await crashlytics.setCustomKey('camera_permission', status.toString());
-      // Logar exceção caso ocorra um erro ao abrir a câmera
+      debugPrint('[CRASH_CAMERA] (multiple) catch acionado. permissão=$status err=$err');
       await crashlytics.recordError(
         err,
         stacktrace,

@@ -1,9 +1,9 @@
 #!/bin/sh
 # This is a generated file; do not edit or check into version control.
-export "FLUTTER_ROOT=/home/enzob/.asdf/installs/flutter/3.13.9-stable"
-export "FLUTTER_APPLICATION_PATH=/home/enzob/Git/SIM/mono-simplifica/app-simplifica/packages/survey_kit"
+export "FLUTTER_ROOT=C:\flutter"
+export "FLUTTER_APPLICATION_PATH=D:\Documents\Lyncas\survey_kit"
 export "COCOAPODS_PARALLEL_CODE_SIGN=true"
-export "FLUTTER_TARGET=lib/main.dart"
+export "FLUTTER_TARGET=lib\main.dart"
 export "FLUTTER_BUILD_DIR=build"
 export "FLUTTER_BUILD_NAME=0.1.2"
 export "FLUTTER_BUILD_NUMBER=0.1.2"

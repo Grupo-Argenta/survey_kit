@@ -1,6 +1,6 @@
+import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:survey_kit/src/answer_format/date_answer_format.dart';
 import 'package:survey_kit/src/result/question/date_question_result.dart';
@@ -90,10 +90,7 @@ class _DateAnswerViewState extends State<DateAnswerView> {
               textAlign: TextAlign.center,
             ),
           ),
-          PlatformWidget(
-            material: (_, __) => _androidDatePicker(),
-            cupertino: (context, platform) => _iosDatePicker(),
-          ),
+          Platform.isIOS ? _iosDatePicker() : _androidDatePicker(),
         ],
       ),
     );
