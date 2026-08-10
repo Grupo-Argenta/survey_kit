@@ -52,6 +52,8 @@ class _MultipleImageAnswerViewState extends State<MultipleImageAnswerView> {
       _validateCurrentState();
     }
 
+    filePaths.removeWhere((path) => !File(path).existsSync());
+
     _startDate = DateTime.now();
   }
 

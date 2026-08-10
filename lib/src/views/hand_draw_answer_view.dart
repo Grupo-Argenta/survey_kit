@@ -71,12 +71,12 @@ class _HandDrawAnswerViewState extends State<HandDrawAnswerView> {
   }
 
   void _checkIfFileExists(String path) {
+    if (path.isEmpty) return;
     final File file = File(path);
-
     if (file.existsSync()) {
       _resultFile = file;
     } else {
-      throw StateError('Provided file does not exists');
+      _resultFile = null; // Apenas reseta para o usuário assinar de novo
     }
   }
 

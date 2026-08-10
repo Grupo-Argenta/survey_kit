@@ -47,6 +47,10 @@ class _ImageAnswerViewState extends State<ImageAnswerView> {
       filePath = savedResult.result!;
     }
 
+    if (filePath.isNotEmpty && !File(filePath).existsSync()) {
+      filePath = '';
+    }
+
     _startDate = DateTime.now();
 
     _validateCurrentState();
